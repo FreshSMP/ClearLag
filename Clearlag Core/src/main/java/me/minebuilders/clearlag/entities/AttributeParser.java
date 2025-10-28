@@ -16,34 +16,25 @@ import java.util.StringTokenizer;
 public class AttributeParser {
 
     public Result getAttributesFromString(EntityType t, StringTokenizer tk) {
-
         final Result result = new Result();
-
         while (tk.hasMoreTokens()) {
-
             EntityAttribute<Entity> attribute = null;
-
             String tok = tk.nextToken();
-
             boolean reversed = (tok.startsWith("!"));
-
-            if (reversed)
+            if (reversed) {
                 tok = tok.substring(1);
+            }
 
             if (tok.startsWith("name=\"") || tok.startsWith("hasMeta=\"")) {
-
                 StringBuilder name = new StringBuilder();
-
                 name.append(tok, 6, (tok.endsWith("\"") ? tok.length() - 1 : tok.length()));
-
                 while (tk.hasMoreTokens()) {
-
                     tok = tk.nextToken();
-
                     if (tok.endsWith("\"")) {
                         name.append(" ").append(tok, 0, tok.length() - 1);
                         break;
                     }
+
                     name.append(" ").append(tok);
                 }
 

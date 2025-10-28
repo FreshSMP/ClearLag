@@ -22,7 +22,6 @@ public class ChunkLimiterListener extends EventModule {
     public void onChunkLoad(ChunkLoadEvent event) {
         if ((!createNewChunks && event.isNewChunk()) || (countChunks() >= limit)) {
             event.getChunk().unload(false);
-
             for (Chunk c : event.getWorld().getLoadedChunks()) {
                 c.unload(true);
             }

@@ -1,5 +1,6 @@
 package me.minebuilders.clearlag.tasks;
 
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.Util;
 import me.minebuilders.clearlag.annotations.AutoWire;
@@ -54,7 +55,7 @@ public class TPSCheckTask extends TaskModule {
 
             try {
                 for (String s : commands) {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s);
+                    ClearLag.scheduler().runNextTick(task -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s));
                 }
             } catch (Exception e) {
                 Util.warning("TPSCheckTask was unable to dispatch commands!");
@@ -68,7 +69,7 @@ public class TPSCheckTask extends TaskModule {
                 }
 
                 for (String s : recoverCommands) {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s);
+                    ClearLag.scheduler().runNextTick(task -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s));
                 }
             } catch (Exception e) {
                 Util.warning("TPSCheckTask was unable to dispatch commands!");
@@ -84,7 +85,7 @@ public class TPSCheckTask extends TaskModule {
     }
 
     @Override
-    protected int startTask() {
-        return Bukkit.getScheduler().scheduleSyncRepeatingTask(ClearLag.getInstance(), this, 420, getInterval());
+    protected WrappedTask startTask() {
+        return ClearLag.scheduler().runTimer(this, 420L, getInterval());
     }
 }

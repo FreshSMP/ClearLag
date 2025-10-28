@@ -1,5 +1,6 @@
 package me.minebuilders.clearlag.tasks;
 
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.RAMUtil;
 import me.minebuilders.clearlag.Util;
 import me.minebuilders.clearlag.annotations.AutoWire;
@@ -26,8 +27,9 @@ public class RAMCheckTask extends TaskModule {
     public void run() {
         if (RAMUtil.getUsedMemory() > ramLimit) {
             try {
-                for (String s : commands)
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s);
+                for (String s : commands) {
+                    ClearLag.scheduler().runNextTick(task -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s));
+                }
             } catch (Exception e) {
                 Util.warning("RAMCheckTask was unable to dispatch commands!");
             }

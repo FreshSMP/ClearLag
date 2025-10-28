@@ -14,10 +14,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @ConfigPath(path = "per-entity-chunk-entity-limiter")
 public class ChunkPerEntityLimiterListener extends EventModule {
@@ -25,7 +24,7 @@ public class ChunkPerEntityLimiterListener extends EventModule {
     @ConfigValue(valueType = ConfigValueType.ENTITY_LIMIT_MAP)
     private EntityMap<Integer> entityLimits;
 
-    private BukkitTask passivePurger = null;
+    private PassivePurger passivePurger = null;
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onChunkLoad(ChunkLoadEvent event) {
@@ -65,57 +64,68 @@ public class ChunkPerEntityLimiterListener extends EventModule {
 
                     entityMap.set(entity.getType(), amount);
                     if (amount > limit) {
-                        entity.remove();
+                        ClearLag.scheduler().runAtEntity(entity, task -> entity.remove());
                     }
                 }
             }
         }
     }
 
-    private class PassivePurger extends BukkitRunnable {
+    private class PassivePurger {
 
         private final int chunkBatchSize;
 
         private int worldIndex = 0;
         private int chunkIndex = 0;
 
+        private final AtomicBoolean cancelled = new AtomicBoolean(false);
+
         private PassivePurger(int chunkBatchSize) {
             this.chunkBatchSize = chunkBatchSize;
         }
 
-        @Override
-        public void run() {
-
-            final List<World> worlds = Bukkit.getWorlds();
-
-            if (worlds.isEmpty()) {
-                return;
-            }
-
-            if (worldIndex >= worlds.size()) {
-                worldIndex = 0;
-            }
-
-            int processedChunks = 0;
-
-            for (World world = worlds.get(worldIndex); processedChunks < chunkBatchSize;) {
-                final Chunk[] chunks = world.getLoadedChunks();
-                if (chunks.length > chunkIndex) {
-                    for (; chunkIndex < chunks.length && processedChunks < chunkBatchSize; ++chunkIndex) {
-                        purgeEntities(chunks[chunkIndex].getEntities());
-                        ++processedChunks;
-                    }
+        private void start() {
+            ClearLag.scheduler().runTimer(task -> {
+                if (cancelled.get()) {
+                    task.cancel();
+                    return;
                 }
 
-                if (processedChunks < chunkBatchSize) {
-                    if (++worldIndex >= worlds.size()) {
-                        worldIndex = 0;
-                        return;
+                final List<World> worlds = Bukkit.getWorlds();
+
+                if (worlds.isEmpty()) {
+                    return;
+                }
+
+                if (worldIndex >= worlds.size()) {
+                    worldIndex = 0;
+                }
+
+                int processedChunks = 0;
+
+                for (World world = worlds.get(worldIndex); processedChunks < chunkBatchSize;) {
+                    final Chunk[] chunks = world.getLoadedChunks();
+                    if (chunks.length > chunkIndex) {
+                        for (; chunkIndex < chunks.length && processedChunks < chunkBatchSize; ++chunkIndex) {
+                            purgeEntities(chunks[chunkIndex].getEntities());
+                            ++processedChunks;
+                        }
                     }
 
-                    chunkIndex = 0;
+                    if (processedChunks < chunkBatchSize) {
+                        if (++worldIndex >= worlds.size()) {
+                            worldIndex = 0;
+                            return;
+                        }
+
+                        chunkIndex = 0;
+                    }
                 }
-            }
+            }, 1L, 1L);
+        }
+
+        private void cancel() {
+            cancelled.set(true);
         }
     }
 
@@ -124,9 +134,14 @@ public class ChunkPerEntityLimiterListener extends EventModule {
         super.setEnabled();
 
         if (ClearLag.getInstance().getConfig().getBoolean("per-entity-chunk-entity-limiter.passive-cleaner.passive-cleaning-enabled")) {
-            passivePurger = new PassivePurger(ClearLag.getInstance().getConfig().getInt("per-entity-chunk-entity-limiter.passive-cleaner.chunk-batch-size")).runTaskTimer(ClearLag.getInstance(),
-                    ClearLag.getInstance().getConfig().getInt("per-entity-chunk-entity-limiter.passive-cleaner.check-interval"),
-                    ClearLag.getInstance().getConfig().getInt("per-entity-chunk-entity-limiter.passive-cleaner.check-interval"));
+            int interval = Math.max(1, ClearLag.getInstance().getConfig().getInt("per-entity-chunk-entity-limiter.passive-cleaner.check-interval"));
+            int batchSize = ClearLag.getInstance().getConfig().getInt("per-entity-chunk-entity-limiter.passive-cleaner.chunk-batch-size");
+            passivePurger = new PassivePurger(batchSize);
+            ClearLag.scheduler().runLater(task -> {
+                if (passivePurger != null) {
+                    passivePurger.start();
+                }
+            }, interval);
         }
     }
 

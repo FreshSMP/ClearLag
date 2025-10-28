@@ -8,13 +8,11 @@ import me.minebuilders.clearlag.language.messages.Message;
 import me.minebuilders.clearlag.language.messages.MessageTree;
 import me.minebuilders.clearlag.modules.CommandModule;
 import org.bukkit.command.CommandSender;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.IntSummaryStatistics;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class TickSamplerCmd extends CommandModule {
 
@@ -68,9 +66,10 @@ public class TickSamplerCmd extends CommandModule {
                 );
             };
 
-            new TimingThread(serverThread, callback, sampleTickCycles).start();
-            lang.sendMessage("start", sender, serverThread.getName(), sampleTickCycles);
         }
+
+        new TimingThread(serverThread, callback, sampleTickCycles).start();
+        lang.sendMessage("start", sender, serverThread.getName(), sampleTickCycles);
     }
 
     private static class TimingThread extends Thread {
@@ -83,51 +82,35 @@ public class TickSamplerCmd extends CommandModule {
 
         private int sampleTickCycles;
 
-        private final AtomicInteger tick = new AtomicInteger();
-
-        private final BukkitRunnable tickWatcher;
+        private long lastTimestamp = -1L;
 
         public TimingThread(Thread watchingThread, Callback<Collection<Integer>> callback, int sampleTickCycles) {
             this.watchingThread = watchingThread;
             this.callback = callback;
             this.sampleTickCycles = ++sampleTickCycles;
             this.fullTickTimings = new ArrayList<>(sampleTickCycles);
+        }
 
-            tickWatcher = new BukkitRunnable() {
-
-                @Override
-                public void run() {
-                    tick.incrementAndGet();
+        public void start() {
+            ClearLag.scheduler().runTimer(task -> {
+                final long now = System.currentTimeMillis();
+                if (lastTimestamp == -1L) {
+                    lastTimestamp = now;
+                    return;
                 }
-            };
 
-            tickWatcher.runTaskTimer(ClearLag.getInstance(), 0L, 0L);
+                fullTickTimings.add((int) (now - lastTimestamp));
+                lastTimestamp = now;
+
+                if (fullTickTimings.size() >= (this.sampleTickCycles - 1)) {
+                    task.cancel();
+                    ClearLag.scheduler().runNextTick(nextTask -> callback.call(fullTickTimings));
+                }
+            }, 1L, 1L);
         }
 
         @Override
         public void run() {
-            try {
-                while (sampleTickCycles-- > 0) {
-                    final int startTick = tick.get();
-                    final long timestamp = System.currentTimeMillis();
-                    while (watchingThread.getState() != State.TIMED_WAITING && tick.get() == startTick) {
-                        Thread.sleep(1);
-                    }
-
-                    fullTickTimings.add((int) (System.currentTimeMillis() - timestamp));
-
-                    while (watchingThread.getState() == State.TIMED_WAITING && tick.get() == startTick) {
-                        Thread.sleep(1);
-                    }
-                }
-
-                fullTickTimings.removeFirst();
-                Util.postToMainThread(() -> callback.call(fullTickTimings));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } finally {
-                tickWatcher.cancel();
-            }
         }
     }
 }

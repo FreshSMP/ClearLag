@@ -26,9 +26,7 @@ public class EntityAISpawnListener extends EventModule {
 
     private final Map<EntityType, Double> mobRanges = new IdentityHashMap<>();
 
-    private Method getHandleMethod,
-            getAttriInstanceMethod,
-            setAttriMethod;
+    private Method getHandleMethod, getAttriInstanceMethod, setAttriMethod;
 
     private Object followRangeConst;
 

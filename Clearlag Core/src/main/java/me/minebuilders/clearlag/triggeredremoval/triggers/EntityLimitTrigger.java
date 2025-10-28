@@ -9,6 +9,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author bob7l
@@ -39,17 +40,17 @@ public class EntityLimitTrigger extends CleanerTrigger {
     }
 
     private int countEntities() {
-        int entities = 0;
+        AtomicInteger entities = new AtomicInteger(0);
         for (World world : Bukkit.getWorlds()) {
             if (!worldFilter.contains(world.getName())) {
                 for (Entity entity : world.getEntities()) {
                     if (entityLimits.containsEntity(entity)) {
-                        ++entities;
+                        entities.incrementAndGet();
                     }
                 }
             }
         }
 
-        return entities;
+        return entities.get();
     }
 }

@@ -1,27 +1,30 @@
 package me.minebuilders.clearlag.modules;
 
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import me.minebuilders.clearlag.ClearLag;
-import org.bukkit.Bukkit;
 
 public abstract class TaskModule extends ClearlagModule implements Runnable {
 
-    protected int taskid = -2;
+    private WrappedTask task;
 
     @Override
     public void setEnabled() {
         super.setEnabled();
 
-        taskid = startTask();
+        task = startTask();
     }
 
-    protected int startTask() {
-        return Bukkit.getScheduler().scheduleSyncRepeatingTask(ClearLag.getInstance(), this, getInterval(), getInterval());
+    protected WrappedTask startTask() {
+        return ClearLag.scheduler().runTimer(this, getInterval(), getInterval());
     }
 
     @Override
     public void setDisabled() {
         super.setDisabled();
-        Bukkit.getScheduler().cancelTask(taskid);
+        if (task != null) {
+            ClearLag.scheduler().cancelTask(task);
+            task = null;
+        }
     }
 
     public int getInterval() {

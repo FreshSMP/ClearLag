@@ -41,8 +41,9 @@ public class ConfigListEntry implements ConfigEntry {
     @Override
     public void merge(ConfigEntry entry) {
 
-        if (entry.getValue() instanceof List) {
-            values = (List<Object>) entry.getValue();
+        Object val = entry.getValue();
+        if (val instanceof List<?> list) {
+            values = new ArrayList<>(list);
         } else {
             values = new ArrayList<>(1);
         }

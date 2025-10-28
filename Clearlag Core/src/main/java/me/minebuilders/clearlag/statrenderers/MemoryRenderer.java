@@ -153,12 +153,6 @@ public class MemoryRenderer extends StatRenderer {
         }
     }
 
-    private static class MemorySample {
-
-        private final int usageInMB;
-
-        public MemorySample(int usageInMB) {
-            this.usageInMB = usageInMB;
-        }
+    private record MemorySample(int usageInMB) {
     }
 }

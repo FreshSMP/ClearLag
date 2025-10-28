@@ -53,7 +53,6 @@ public class ProfileCmd extends CommandModule {
         final Callback<Map<ChunkKey, MutableInt>> callback = chunkKeyMutableIntMap -> {
             if (chunkKeyMutableIntMap.isEmpty()) {
                 lang.sendMessage("nosamples", sender);
-
                 return;
             }
 
@@ -63,9 +62,7 @@ public class ProfileCmd extends CommandModule {
             for (Map.Entry<ChunkKey, MutableInt> entry : chunkKeyMutableIntMap.entrySet()) {
                 final int amount = entry.getValue().getValue();
                 for (int i = 0; i < size; i++) {
-
                     if (sizes[i] == null || sizes[i] < amount) {
-
                         Util.shiftRight(chunks, i);
                         Util.shiftRight(sizes, i);
 
@@ -144,8 +141,9 @@ public class ProfileCmd extends CommandModule {
             if (count == null) {
                 count = new MutableInt(1);
                 chunkMap.put(key, count);
-            } else
+            } else {
                 count.increment();
+            }
         }
     }
 

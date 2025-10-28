@@ -5,14 +5,13 @@ import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.annotations.ConfigPath;
 import me.minebuilders.clearlag.annotations.ConfigValue;
 import me.minebuilders.clearlag.modules.EventModule;
-import org.bukkit.Bukkit;
 import org.bukkit.block.Hopper;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @ConfigPath(path = "hopper-limiter")
 public class HopperLimitListener extends EventModule implements Runnable {
@@ -23,55 +22,52 @@ public class HopperLimitListener extends EventModule implements Runnable {
     @ConfigValue
     private final int checkInterval = 1;
 
-    private int schedulerID = -1;
+    private final AtomicBoolean cancelled = new AtomicBoolean(false);
 
-    private Map<ChunkKey, Integer> hopperDataMap = new HashMap<>();
+    // Concurrent + atomic counters per chunk
+    private ConcurrentHashMap<ChunkKey, AtomicInteger> hopperDataMap = new ConcurrentHashMap<>();
 
     @EventHandler
     public void onHopper(InventoryMoveItemEvent event) {
-        if (event.getSource().getHolder() instanceof Hopper) {
-            ChunkKey chunkKey = new ChunkKey(((Hopper) event.getSource().getHolder()).getChunk());
-            Integer transfers = hopperDataMap.get(chunkKey);
-            if (transfers == null) {
-                transfers = 0;
-            }
+        if (event.getSource().getHolder() instanceof Hopper hopper) {
+            final ChunkKey chunkKey = new ChunkKey(hopper.getChunk());
+            final AtomicInteger transfers = hopperDataMap.computeIfAbsent(chunkKey, k -> new AtomicInteger(0));
 
-            if (transfers >= transferLimit) {
+            if (transfers.get() >= transferLimit) {
                 event.setCancelled(true);
             } else {
-                ++transfers;
+                transfers.incrementAndGet();
             }
-
-            hopperDataMap.put(chunkKey, transfers);
         }
     }
 
     @Override
     public void run() {
-        Iterator<Map.Entry<ChunkKey, Integer>> entries = hopperDataMap.entrySet().iterator();
-        while (entries.hasNext()) {
-            Map.Entry<ChunkKey, Integer> entry = entries.next();
-            if (entry.getValue() == 0) {
-                entries.remove();
-            } else {
-                entry.setValue(0);
-            }
-        }
+        hopperDataMap.entrySet().removeIf(e -> e.getValue().get() == 0);
+        hopperDataMap.forEach((k, v) -> v.set(0));
     }
 
     @Override
     public void setEnabled() {
         super.setEnabled();
 
-        schedulerID = Bukkit.getScheduler().scheduleSyncRepeatingTask(ClearLag.getInstance(), this, checkInterval * 20L, checkInterval * 20L);
+        cancelled.set(false);
+
+        final long ticks = Math.max(1L, checkInterval * 20L);
+        ClearLag.scheduler().runTimer(task -> {
+            if (cancelled.get()) {
+                task.cancel();
+                return;
+            }
+
+            this.run();
+        }, ticks, ticks);
     }
 
     @Override
     public void setDisabled() {
         super.setDisabled();
-        if (schedulerID != -1) {
-            Bukkit.getServer().getScheduler().cancelTask(schedulerID);
-            hopperDataMap = new HashMap<>();
-        }
+        cancelled.set(true);
+        hopperDataMap = new ConcurrentHashMap<>();
     }
 }

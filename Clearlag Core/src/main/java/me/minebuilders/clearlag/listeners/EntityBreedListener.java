@@ -9,6 +9,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 @ConfigPath(path = "mob-breeding-limiter")
 public class EntityBreedListener extends EventModule {
 
@@ -22,10 +24,10 @@ public class EntityBreedListener extends EventModule {
 	public void onCreatureSpawn(CreatureSpawnEvent event) {
 		if (event.getSpawnReason() == SpawnReason.EGG || event.getSpawnReason() == SpawnReason.BREEDING) {
 			final Entity eventEntity = event.getEntity();
-			int count = 0;
+			AtomicInteger count = new AtomicInteger(0);
 			for (Entity entity : eventEntity.getNearbyEntities(checkRadius, checkRadius, checkRadius)) {
 				if (entity instanceof Ageable) {
-					if (++count >= maxMobs) {
+					if (count.incrementAndGet() >= maxMobs) {
 						event.setCancelled(true);
 						return;
 					}

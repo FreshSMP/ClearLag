@@ -1,5 +1,6 @@
 package me.minebuilders.clearlag.events;
 
+import me.minebuilders.clearlag.ClearLag;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
@@ -20,11 +21,11 @@ public class EntityRemoveEvent extends Event {
 	}
 
 	public void addEntity(Entity e) {
-		entities.add(e);
+		ClearLag.scheduler().runAtEntity(e, task -> entities.add(e));
 	}
 
 	public void removeEntity(Entity e) {
-		entities.remove(e);
+		ClearLag.scheduler().runAtEntity(e, task -> entities.remove(e));
 	}
 
 	public List<Entity> getEntityList() {

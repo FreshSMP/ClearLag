@@ -5,6 +5,5 @@ package me.minebuilders.clearlag.triggeredremoval.triggers;
  */
 public interface Trigger {
     boolean runTrigger();
-
     int getCheckFrequency();
 }

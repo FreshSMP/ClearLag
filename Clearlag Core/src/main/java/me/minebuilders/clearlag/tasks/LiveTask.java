@@ -1,5 +1,6 @@
 package me.minebuilders.clearlag.tasks;
 
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.annotations.AutoWire;
 import me.minebuilders.clearlag.annotations.ConfigPath;
 import me.minebuilders.clearlag.annotations.ConfigValue;
@@ -38,15 +39,15 @@ public class LiveTask extends TaskModule {
             for (Entity e : w.getEntities()) {
                 if (mobtimer && e instanceof LivingEntity && !(e instanceof HumanEntity)) {
                     if (e.getTicksLived() > moblivetime) {
-                        e.remove();
+                        ClearLag.scheduler().runAtEntity(e, task -> e.remove());
                     }
                 } else if (itemtimer && e instanceof Item) {
                     if (e.getTicksLived() > itemlivetime) {
-                        e.remove();
+                        ClearLag.scheduler().runAtEntity(e, task -> e.remove());
                     }
                 } else if (arrowtimer && e instanceof Arrow) {
                     if (e.getTicksLived() > arrowkilltime) {
-                        e.remove();
+                        ClearLag.scheduler().runAtEntity(e, task -> e.remove());
                     }
                 }
             }

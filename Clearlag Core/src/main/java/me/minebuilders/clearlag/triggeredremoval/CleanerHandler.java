@@ -21,14 +21,12 @@ public class CleanerHandler {
     }
 
     public void startJobs() {
-
         for (ClearlagModule job : cleanerJobs) {
             job.setEnabled();
         }
     }
 
     public boolean areJobsComplete() {
-
         for (ClearlagModule job : cleanerJobs) {
             if (job.isEnabled()) {
                 return false;

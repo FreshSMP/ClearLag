@@ -1,5 +1,6 @@
 package me.minebuilders.clearlag.listeners;
 
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.annotations.ConfigPath;
 import me.minebuilders.clearlag.annotations.ConfigValue;
 import me.minebuilders.clearlag.config.ConfigValueType;
@@ -10,6 +11,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 @ConfigPath(path = "chunk-entity-limiter")
 public class ChunkEntityLimiterListener extends EventModule {
@@ -24,11 +27,11 @@ public class ChunkEntityLimiterListener extends EventModule {
     public void onChunkLoad(ChunkLoadEvent event) {
         Entity[] entities = event.getChunk().getEntities();
         if (entities.length >= limit) {
-            int count = 0;
+            AtomicInteger count = new AtomicInteger(0);
             for (Entity e : entities) {
                 if (this.entities.containsEntity(e)) {
-                    if (++count > limit) {
-                        e.remove();
+                    if (count.incrementAndGet() > limit) {
+                        ClearLag.scheduler().runAtEntity(e, task -> e.remove());
                     }
                 }
             }
@@ -40,14 +43,14 @@ public class ChunkEntityLimiterListener extends EventModule {
         if (this.entities.containsEntity(event.getEntity())) {
             Entity[] entities = event.getLocation().getChunk().getEntities();
             if (entities.length >= limit) {
-                int count = 0;
+                AtomicInteger count = new AtomicInteger(0);
                 for (Entity e : entities) {
                     if (this.entities.containsEntity(e)) {
-                        ++count;
+                        count.incrementAndGet();
                     }
                 }
 
-                event.setCancelled(count >= limit);
+                event.setCancelled(count.get() >= limit);
             }
         }
     }

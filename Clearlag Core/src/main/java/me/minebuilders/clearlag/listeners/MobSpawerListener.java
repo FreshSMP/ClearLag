@@ -13,6 +13,8 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @ConfigPath(path = "mobspawner")
 public class MobSpawerListener extends EventModule {
@@ -23,20 +25,21 @@ public class MobSpawerListener extends EventModule {
     @ConfigValue
     private boolean removeMobsOnChunkUnload;
 
-    private final HashMap<ChunkKey, List<Entity>> map = new HashMap<>();
+    private final ConcurrentHashMap<ChunkKey, ConcurrentLinkedQueue<Entity>> map = new ConcurrentHashMap<>();
 
-    private boolean isOverLimit(List<Entity> en) {
-        Iterator<Entity> ee = en.iterator();
+    private boolean isOverLimit(ConcurrentLinkedQueue<Entity> en) {
+        en.removeIf(Entity::isDead);
         int amount = 0;
-        while (ee.hasNext()) {
-            if (ee.next().isDead()) {
-                ee.remove();
-            } else {
+        for (Entity e : en) {
+            if (!e.isDead()) {
                 amount++;
+                if (amount >= maxSpawn) {
+                    return true;
+                }
             }
         }
 
-        return (amount >= maxSpawn);
+        return false;
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -45,7 +48,7 @@ public class MobSpawerListener extends EventModule {
         final LivingEntity e = event.getEntity();
         if (event.getSpawnReason() == SpawnReason.SPAWNER) {
             ChunkKey key = new ChunkKey(event.getLocation().getChunk());
-            List<Entity> entities = map.computeIfAbsent(key, k -> new ArrayList<>());
+            ConcurrentLinkedQueue<Entity> entities = map.computeIfAbsent(key, k -> new ConcurrentLinkedQueue<>());
             if (removeMobsOnChunkUnload) {
                 e.setRemoveWhenFarAway(true);
             }

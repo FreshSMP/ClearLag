@@ -9,7 +9,6 @@ import me.minebuilders.clearlag.language.LanguageValue;
 import me.minebuilders.clearlag.language.messages.MessageTree;
 import me.minebuilders.clearlag.modules.CommandModule;
 import org.bukkit.command.CommandSender;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -32,8 +31,9 @@ public class SampleMemoryCmd extends CommandModule {
     @Override
     protected void run(CommandSender sender, String[] args) throws WrongCommandArgumentException {
 
-        if (!Util.isInteger(args[0]))
+        if (!Util.isInteger(args[0])) {
             throw new WrongCommandArgumentException(lang.getMessage("invalidinteger"), args[0]);
+        }
 
         lang.sendMessage("begin", sender, args[0]);
 
@@ -71,8 +71,6 @@ public class SampleMemoryCmd extends CommandModule {
                     Util.getChatColorByNumberLength((int) averageMemory, 30, 100) + Long.toString(averageMemory)
             );
 
-
-            //Todo: Replace this pointless code with new Java 8 features...
             if (s.gcCollectionTickstamps.size() > 1) {
                 long highestGC = s.gcCollectionTickstamps.getFirst().data;
                 long lowestGC = highestGC;
@@ -108,15 +106,14 @@ public class SampleMemoryCmd extends CommandModule {
                         Util.getChatColorByNumberLength((int) highestGC, 100, 200) + "" + highestGC,
                         Util.getChatColorByNumberLength((int) lowestGC, 100, 200) + "" + lowestGC,
                         Util.getChatColorByNumberLength((int) averageGC, 100, 200) + "" + averageGC,
-                        averageBetweenTime
-                );
+                        averageBetweenTime);
             } else {
                 lang.sendMessage("notenoughtime", sender);
             }
-        }).runTaskTimer(ClearLag.getInstance(), 1L, 1L);
+        }).start();
     }
 
-    private static class MemorySamlier extends BukkitRunnable {
+    private static class MemorySamlier {
 
         private int currentTick = 0;
 
@@ -140,27 +137,28 @@ public class SampleMemoryCmd extends CommandModule {
             this.memoryList = new ArrayList<>(runTicks);
         }
 
-        @Override
-        public void run() {
-            long currentGcCollections = getTotalGCEvents();
-            if (currentGcCollections != gcCollections) {
-                long currentTotalGCPauseTime = getTotalGCCompleteTime();
+        public void start() {
+            ClearLag.scheduler().runTimer(task -> {
+                long currentGcCollections = getTotalGCEvents();
+                if (currentGcCollections != gcCollections) {
+                    long currentTotalGCPauseTime = getTotalGCCompleteTime();
 
-                gcCollectionTickstamps.add(new Sample(currentTick, currentTotalGCPauseTime - gcLastPauseTime));
-                gcCollections = currentGcCollections;
-                gcLastPauseTime = currentTotalGCPauseTime;
-            }
+                    gcCollectionTickstamps.add(new Sample(currentTick, currentTotalGCPauseTime - gcLastPauseTime));
+                    gcCollections = currentGcCollections;
+                    gcLastPauseTime = currentTotalGCPauseTime;
+                }
 
-            long memoryUsedDif = (RAMUtil.getUsedMemory() - lastMemoryUsed);
+                long memoryUsedDif = (RAMUtil.getUsedMemory() - lastMemoryUsed);
 
-            memoryList.add(memoryUsedDif);
+                memoryList.add(memoryUsedDif);
 
-            lastMemoryUsed = RAMUtil.getUsedMemory();
+                lastMemoryUsed = RAMUtil.getUsedMemory();
 
-            if (++currentTick > runTicks) {
-                cancel();
-                callback.call(this);
-            }
+                if (++currentTick > runTicks) {
+                    task.cancel();
+                    callback.call(this);
+                }
+            }, 1L, 1L);
         }
 
         private long getTotalGCEvents() {

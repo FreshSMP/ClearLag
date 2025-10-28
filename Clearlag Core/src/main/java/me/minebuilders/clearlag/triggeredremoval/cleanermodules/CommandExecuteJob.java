@@ -1,5 +1,6 @@
 package me.minebuilders.clearlag.triggeredremoval.cleanermodules;
 
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.Util;
 import me.minebuilders.clearlag.annotations.ConfigValue;
 import me.minebuilders.clearlag.modules.ClearlagModule;
@@ -30,8 +31,9 @@ public class CommandExecuteJob extends ClearlagModule {
         super.setEnabled();
 
         try {
-            for (String s : commands)
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s);
+            for (String s : commands) {
+                ClearLag.scheduler().runNextTick(task -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s));
+            }
         } catch (Exception e) {
             Util.warning("CommandExecuteJob was unable to dispatch commands!");
         }
@@ -43,7 +45,7 @@ public class CommandExecuteJob extends ClearlagModule {
 
         try {
             for (String s : recoverCommands) {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s);
+                ClearLag.scheduler().runNextTick(task -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s));
             }
         } catch (Exception e) {
             Util.warning("CommandExecuteJob was unable to dispatch commands!");

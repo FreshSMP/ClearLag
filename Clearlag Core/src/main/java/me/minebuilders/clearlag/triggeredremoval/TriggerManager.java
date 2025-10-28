@@ -1,5 +1,6 @@
 package me.minebuilders.clearlag.triggeredremoval;
 
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.Util;
 import me.minebuilders.clearlag.annotations.AutoWire;
@@ -13,8 +14,6 @@ import me.minebuilders.clearlag.triggeredremoval.triggers.CleanerTrigger;
 import me.minebuilders.clearlag.triggeredremoval.triggers.EntityLimitTrigger;
 import me.minebuilders.clearlag.triggeredremoval.triggers.TPSTrigger;
 import org.bukkit.configuration.Configuration;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +29,7 @@ public class TriggerManager extends ClearlagModule {
     @AutoWire
     private ConfigHandler configHandler;
 
-    private final Map<CleanerTrigger, BukkitTask> triggerTaskMap = new HashMap<>(2);
+    private final Map<CleanerTrigger, WrappedTask> triggerTaskMap = new HashMap<>(2);
 
     @Override
     public void setEnabled() {
@@ -112,14 +111,7 @@ public class TriggerManager extends ClearlagModule {
                     }
                 }
 
-                final BukkitTask runnableTask = new BukkitRunnable() {
-
-                    @Override
-                    public void run() {
-                        trigger.runTrigger();
-                    }
-                }.runTaskTimer(ClearLag.getInstance(), trigger.getCheckFrequency(), trigger.getCheckFrequency());
-
+                final WrappedTask runnableTask = ClearLag.scheduler().runTimer(trigger::runTrigger, trigger.getCheckFrequency(), trigger.getCheckFrequency());
                 triggerTaskMap.put(trigger, runnableTask);
             }
         }
@@ -129,8 +121,8 @@ public class TriggerManager extends ClearlagModule {
     public void setDisabled() {
         super.setDisabled();
 
-        for (BukkitTask task : triggerTaskMap.values()) {
-            task.cancel();
+        for (WrappedTask task : triggerTaskMap.values()) {
+            ClearLag.scheduler().cancelTask(task);
         }
 
         triggerTaskMap.clear();

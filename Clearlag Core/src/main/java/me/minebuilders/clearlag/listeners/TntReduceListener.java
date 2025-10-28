@@ -1,5 +1,6 @@
 package me.minebuilders.clearlag.listeners;
 
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.annotations.ConfigPath;
 import me.minebuilders.clearlag.annotations.ConfigValue;
 import me.minebuilders.clearlag.modules.EventModule;
@@ -7,6 +8,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityExplodeEvent;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 @ConfigPath(path = "tnt-reducer")
 public class TntReduceListener extends EventModule {
@@ -21,13 +24,11 @@ public class TntReduceListener extends EventModule {
     public void onBoom(EntityExplodeEvent event) {
         Entity e = event.getEntity();
         if (e.getType() == EntityType.TNT) {
-            int counter = 0;
+            AtomicInteger counter = new AtomicInteger(0);
             for (Entity tnt : e.getNearbyEntities(checkRadius, checkRadius, checkRadius)) {
                 if (tnt.getType() == EntityType.TNT) {
-                    if (counter > maxPrimed) {
-                        tnt.remove();
-                    } else {
-                        ++counter;
+                    if (counter.incrementAndGet() > maxPrimed) {
+                        ClearLag.scheduler().runAtEntity(tnt, task -> tnt.remove());
                     }
                 }
             }

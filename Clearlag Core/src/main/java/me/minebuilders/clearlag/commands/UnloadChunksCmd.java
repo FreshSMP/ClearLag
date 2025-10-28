@@ -26,22 +26,17 @@ public class UnloadChunksCmd extends CommandModule {
         final PluginManager pluginManager = Bukkit.getPluginManager();
 
         for (World world : Bukkit.getServer().getWorlds()) {
-
             for (Chunk chunk : world.getLoadedChunks()) {
-
                 if (!world.isChunkInUse(chunk.getX(), chunk.getZ())) {
-
                     ChunkUnloadEvent event = new ChunkUnloadEvent(chunk);
-
                     pluginManager.callEvent(event);
-
                     if (chunk.unload(true)) {
                         chunkcount++;
                     }
                 }
             }
-
         }
+
         unloadPrintMessage.sendMessage(sender, chunkcount);
     }
 }

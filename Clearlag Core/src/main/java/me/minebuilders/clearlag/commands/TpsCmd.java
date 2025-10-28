@@ -19,5 +19,4 @@ public class TpsCmd extends CommandModule {
     protected void run(CommandSender sender, String[] args) {
         tpsPrintMessage.sendMessage(sender, tpsTask.getStringTPS());
     }
-
 }

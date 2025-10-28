@@ -25,6 +25,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CheckCmd extends CommandModule {
 
@@ -51,47 +52,47 @@ public class CheckCmd extends CommandModule {
             worlds = Bukkit.getWorlds();
         }
 
-        int removed1 = 0, mobs = 0, animals = 0, chunks = 0, spawners = 0, activehoppers = 0, inactivehoppers = 0, players = 0;
+        AtomicInteger removed = new AtomicInteger(0), mobs = new AtomicInteger(0), animals = new AtomicInteger(0), chunks = new AtomicInteger(0), spawners = new AtomicInteger(0), activehoppers = new AtomicInteger(0), inactivehoppers = new AtomicInteger(0), players = new AtomicInteger(0);
         for (World w : worlds) {
             for (Chunk c : w.getLoadedChunks()) {
                 for (BlockState bt : c.getTileEntities()) {
                     if (bt instanceof CreatureSpawner) {
-                        spawners++;
+                        spawners.incrementAndGet();
                     } else if (bt instanceof Hopper) {
                         if (!isHopperEmpty((Hopper) bt)) {
-                            activehoppers++;
+                            activehoppers.incrementAndGet();
                         } else {
-                            inactivehoppers++;
+                            inactivehoppers.incrementAndGet();
                         }
                     }
                 }
 
                 for (Entity e : c.getEntities()) {
                     switch (e) {
-                        case Monster monster -> mobs++;
-                        case Player player -> players++;
-                        case Creature creature -> animals++;
-                        case Item item -> removed1++;
+                        case Monster monster -> mobs.incrementAndGet();
+                        case Player player -> players.incrementAndGet();
+                        case Creature creature -> animals.incrementAndGet();
+                        case Item item -> removed.incrementAndGet();
                         default -> {
                         }
                     }
                 }
 
-                chunks++;
+                chunks.incrementAndGet();
             }
         }
 
         lang.sendMessage("header", sender);
 
         lang.sendMessage("printed", sender,
-                removed1,
-                mobs,
-                animals,
-                players,
-                chunks,
-                activehoppers,
-                inactivehoppers,
-                spawners,
+                removed.get(),
+                mobs.get(),
+                animals.get(),
+                players.get(),
+                chunks.get(),
+                activehoppers.get(),
+                inactivehoppers.get(),
+                spawners.get(),
                 Util.getTime(System.currentTimeMillis() - ClearLag.getInstance().getInitialBootTimestamp()),
                 tpsTask.getStringTPS(),
                 RAMUtil.getUsedMemory(), RAMUtil.getMaxMemory(),

@@ -1,5 +1,6 @@
 package me.minebuilders.clearlag.tasks;
 
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.annotations.AutoWire;
 import me.minebuilders.clearlag.annotations.ConfigModule;
 import me.minebuilders.clearlag.annotations.ConfigPath;
@@ -42,7 +43,7 @@ public class LimitTask extends TaskModule {
         }
 
         for (Entity entity : ents) {
-            entity.remove();
+            ClearLag.scheduler().runAtEntity(entity, task -> entity.remove());
         }
 
         if (configHandler.getConfig().getBoolean("limit.broadcast-removal")) {

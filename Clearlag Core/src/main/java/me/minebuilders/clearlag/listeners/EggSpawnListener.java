@@ -9,6 +9,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 @ConfigPath(path = "mobegg-limiter")
 public class EggSpawnListener extends EventModule {
 
@@ -29,12 +31,12 @@ public class EggSpawnListener extends EventModule {
 	}
 
 	private int countNearbyLivingEntities(Entity checkEntity, int checkRadius) {
-		int count = 0;
+		AtomicInteger count = new AtomicInteger(0);
 		//Use a loop because in some CraftBukkit's, this returns an array rather than a list
 		for (Entity ignored : checkEntity.getNearbyEntities(checkRadius, checkRadius, checkRadius)) {
-            ++count;
+            count.incrementAndGet();
         }
 
-		return count;
+		return count.get();
 	}
 }

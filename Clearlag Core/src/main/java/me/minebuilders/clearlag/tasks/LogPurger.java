@@ -1,5 +1,6 @@
 package me.minebuilders.clearlag.tasks;
 
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.Util;
 import me.minebuilders.clearlag.annotations.AutoWire;
@@ -32,7 +33,6 @@ public class LogPurger extends TaskModule {
         int deleted = 0;
 
         if (files != null) {
-
             for (File file : files) {
                 if (file.isFile() && file.getName().endsWith(".log.gz") && time > Util.parseTime(file.getName().replace(".log.gz", "")).getTime()) {
                     file.delete();
@@ -45,7 +45,7 @@ public class LogPurger extends TaskModule {
     }
 
     @Override
-    public int startTask() {
-        return Bukkit.getScheduler().runTaskLaterAsynchronously(ClearLag.getInstance(), this, 0L).getTaskId();
+    protected WrappedTask startTask() {
+        return ClearLag.scheduler().runLaterAsync(this, 1L);
     }
 }

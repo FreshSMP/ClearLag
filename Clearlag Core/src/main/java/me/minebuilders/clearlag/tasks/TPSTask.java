@@ -1,5 +1,6 @@
 package me.minebuilders.clearlag.tasks;
 
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.Util;
 import me.minebuilders.clearlag.annotations.AutoWire;
@@ -35,8 +36,7 @@ public class TPSTask extends TaskModule {
     }
 
     @Override
-    protected int startTask() {
-
+    protected WrappedTask startTask() {
         elapsedTicks = 0;
         if (configHandler.getConfig().getBoolean("settings.use-internal-tps")) {
             try {
@@ -46,13 +46,11 @@ public class TPSTask extends TaskModule {
 
                 tpsCalculator = new EstimatedTPSCalculator();
             }
-
-
         } else {
             tpsCalculator = new EstimatedTPSCalculator();
         }
 
-        return Bukkit.getScheduler().scheduleSyncRepeatingTask(ClearLag.getInstance(), this, 120L, getInterval());
+        return ClearLag.scheduler().runTimer(this, 120L, getInterval());
     }
 
     public double getTPS() {
