@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>Clearlag Core</module>
+        <module>main</module>
     </modules>
 
     <build>
