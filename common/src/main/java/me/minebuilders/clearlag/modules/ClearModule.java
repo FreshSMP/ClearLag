@@ -17,11 +17,9 @@ public abstract class ClearModule extends ClearlagModule {
         }
 
 		for (Entity ent : list) {
-			ClearLag.scheduler().runAtEntity(ent, task -> {
-				if (isRemovable(ent)) {
-                    en.add(ent);
-                }
-			});
+			if (isRemovable(ent)) {
+                en.add(ent);
+            }
 		}
 
 		return en;
@@ -35,11 +33,9 @@ public abstract class ClearModule extends ClearlagModule {
             }
 
 			for (Entity ent : w.getEntities()) {
-				ClearLag.scheduler().runAtEntity(ent, task -> {
-					if (isRemovable(ent)) {
-                        en.add(ent);
-                    }
-				});
+				if (isRemovable(ent)) {
+                    en.add(ent);
+                }
 			}
 		}
 

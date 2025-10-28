@@ -42,7 +42,11 @@ public class Util {
     }
 
     public static void postToMainThread(Runnable runnable) {
-        Bukkit.getScheduler().runTask(ClearLag.getInstance(), runnable);
+        if (Bukkit.isPrimaryThread()) {
+            runnable.run();
+        } else {
+            ClearLag.scheduler().runNextTick(task -> runnable.run());
+        }
     }
 
     public static boolean isInteger(String s) {

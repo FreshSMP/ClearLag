@@ -18,7 +18,10 @@ import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.PluginManager;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @ConfigPath(path = "halt-command")
 public class HaltTask extends ClearlagModule implements Listener {
@@ -45,17 +48,27 @@ public class HaltTask extends ClearlagModule implements Listener {
 
         for (World w : Bukkit.getWorlds()) {
             if (removeEntities) {
-                entityManager.removeEntities(new ClearModule() {
-                    @Override
-                    public boolean isRemovable(Entity e) {
-                        return (((e instanceof Item)) || ((e instanceof TNTPrimed)) || ((e instanceof ExperienceOrb)) || ((e instanceof FallingBlock)) || ((e instanceof Monster)));
-                    }
+                for (World world : Bukkit.getWorlds()) {
+                    final Entity[] snapshot = world.getEntities().toArray(new Entity[0]);
+                    if (snapshot.length == 0) continue;
 
-                    @Override
-                    public boolean isWorldEnabled(World w) {
-                        return true;
+                    final ConcurrentLinkedQueue<Entity> matched = new ConcurrentLinkedQueue<>();
+                    final AtomicInteger pending = new AtomicInteger(snapshot.length);
+
+                    for (Entity e : snapshot) {
+                        ClearLag.scheduler().runAtEntity(e, task -> {
+                            try {
+                                if (((e instanceof Item)) || ((e instanceof TNTPrimed)) || ((e instanceof ExperienceOrb)) || ((e instanceof FallingBlock)) || ((e instanceof Monster))) {
+                                    matched.add(e);
+                                }
+                            } finally {
+                                if (pending.decrementAndGet() == 0) {
+                                    entityManager.removeEntities(new ArrayList<>(matched), world);
+                                }
+                            }
+                        });
                     }
-                });
+                }
             }
 
             if (disableNaturalEntitySpawning) {

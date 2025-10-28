@@ -22,8 +22,10 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.Location;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,54 +54,118 @@ public class CheckCmd extends CommandModule {
             worlds = Bukkit.getWorlds();
         }
 
-        AtomicInteger removed = new AtomicInteger(0), mobs = new AtomicInteger(0), animals = new AtomicInteger(0), chunks = new AtomicInteger(0), spawners = new AtomicInteger(0), activehoppers = new AtomicInteger(0), inactivehoppers = new AtomicInteger(0), players = new AtomicInteger(0);
+        final AtomicInteger removed = new AtomicInteger(0);
+        final AtomicInteger mobs = new AtomicInteger(0);
+        final AtomicInteger animals = new AtomicInteger(0);
+        final AtomicInteger chunks = new AtomicInteger(0);
+        final AtomicInteger spawners = new AtomicInteger(0);
+        final AtomicInteger activehoppers = new AtomicInteger(0);
+        final AtomicInteger inactivehoppers = new AtomicInteger(0);
+        final AtomicInteger players = new AtomicInteger(0);
+
+        final List<Chunk> all = new ArrayList<>();
         for (World w : worlds) {
-            for (Chunk c : w.getLoadedChunks()) {
-                for (BlockState bt : c.getTileEntities()) {
-                    if (bt instanceof CreatureSpawner) {
-                        spawners.incrementAndGet();
-                    } else if (bt instanceof Hopper) {
-                        if (!isHopperEmpty((Hopper) bt)) {
-                            activehoppers.incrementAndGet();
-                        } else {
-                            inactivehoppers.incrementAndGet();
-                        }
-                    }
-                }
-
-                for (Entity e : c.getEntities()) {
-                    switch (e) {
-                        case Monster monster -> mobs.incrementAndGet();
-                        case Player player -> players.incrementAndGet();
-                        case Creature creature -> animals.incrementAndGet();
-                        case Item item -> removed.incrementAndGet();
-                        default -> {
-                        }
-                    }
-                }
-
-                chunks.incrementAndGet();
-            }
+            Collections.addAll(all, w.getLoadedChunks());
         }
 
-        lang.sendMessage("header", sender);
+        if (all.isEmpty()) {
+            lang.sendMessage("header", sender);
+            lang.sendMessage("printed", sender,
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    Util.getTime(System.currentTimeMillis() - ClearLag.getInstance().getInitialBootTimestamp()),
+                    tpsTask.getStringTPS(),
+                    RAMUtil.getUsedMemory(), RAMUtil.getMaxMemory(),
+                    (RAMUtil.getMaxMemory() - RAMUtil.getUsedMemory())
+            );
+            lang.sendMessage("footer", sender);
+            return;
+        }
 
-        lang.sendMessage("printed", sender,
-                removed.get(),
-                mobs.get(),
-                animals.get(),
-                players.get(),
-                chunks.get(),
-                activehoppers.get(),
-                inactivehoppers.get(),
-                spawners.get(),
-                Util.getTime(System.currentTimeMillis() - ClearLag.getInstance().getInitialBootTimestamp()),
-                tpsTask.getStringTPS(),
-                RAMUtil.getUsedMemory(), RAMUtil.getMaxMemory(),
-                (RAMUtil.getMaxMemory() - RAMUtil.getUsedMemory())
-        );
+        final AtomicInteger pending = new AtomicInteger(all.size());
 
-        lang.sendMessage("footer", sender);
+        for (Chunk c : all) {
+            final World w = c.getWorld();
+            final int cx = c.getX();
+            final int cz = c.getZ();
+            final int lx = (cx << 4) + 8;
+            final int lz = (cz << 4) + 8;
+            final int ly = w.getMinHeight() + 1;
+
+            Location loc = new Location(w, lx, ly, lz);
+
+            ClearLag.scheduler().runAtLocation(loc, task -> {
+                try {
+                    final Chunk rc = w.getChunkAt(cx, cz);
+
+                    for (BlockState bt : rc.getTileEntities()) {
+                        if (bt instanceof CreatureSpawner) {
+                            spawners.incrementAndGet();
+                        } else if (bt instanceof Hopper hop) {
+                            if (!isHopperEmpty(hop)) {
+                                activehoppers.incrementAndGet();
+                            } else {
+                                inactivehoppers.incrementAndGet();
+                            }
+                        }
+                    }
+
+                    for (Entity e : rc.getEntities()) {
+                        switch (e) {
+                            case Monster monster -> mobs.incrementAndGet();
+                            case Player p -> players.incrementAndGet();
+                            case Creature creature -> animals.incrementAndGet();
+                            case Item item -> removed.incrementAndGet();
+                            default -> {
+                            }
+                        }
+                    }
+
+                    chunks.incrementAndGet();
+                } finally {
+                    if (pending.decrementAndGet() == 0) {
+                        if (sender instanceof Player plr) {
+                            ClearLag.scheduler().runAtEntity(plr, t -> {
+                                lang.sendMessage("header", plr);
+                                lang.sendMessage("printed", plr,
+                                        removed.get(),
+                                        mobs.get(),
+                                        animals.get(),
+                                        players.get(),
+                                        chunks.get(),
+                                        activehoppers.get(),
+                                        inactivehoppers.get(),
+                                        spawners.get(),
+                                        Util.getTime(System.currentTimeMillis() - ClearLag.getInstance().getInitialBootTimestamp()),
+                                        tpsTask.getStringTPS(),
+                                        RAMUtil.getUsedMemory(), RAMUtil.getMaxMemory(),
+                                        (RAMUtil.getMaxMemory() - RAMUtil.getUsedMemory())
+                                );
+                                lang.sendMessage("footer", plr);
+                            });
+                        } else {
+                            ClearLag.scheduler().runNextTick(t -> {
+                                lang.sendMessage("header", sender);
+                                lang.sendMessage("printed", sender,
+                                        removed.get(),
+                                        mobs.get(),
+                                        animals.get(),
+                                        players.get(),
+                                        chunks.get(),
+                                        activehoppers.get(),
+                                        inactivehoppers.get(),
+                                        spawners.get(),
+                                        Util.getTime(System.currentTimeMillis() - ClearLag.getInstance().getInitialBootTimestamp()),
+                                        tpsTask.getStringTPS(),
+                                        RAMUtil.getUsedMemory(), RAMUtil.getMaxMemory(),
+                                        (RAMUtil.getMaxMemory() - RAMUtil.getUsedMemory())
+                                );
+                                lang.sendMessage("footer", sender);
+                            });
+                        }
+                    }
+                }
+            });
+        }
     }
 
     private boolean isHopperEmpty(Hopper hop) {

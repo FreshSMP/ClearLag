@@ -2,12 +2,11 @@ package me.minebuilders.clearlag.statrenderers;
 
 import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.adapters.VersionAdapter;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.map.*;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 
 /**
  * @author bob7l
@@ -30,7 +29,7 @@ public abstract class StatRenderer extends MapRenderer implements Runnable {
 
     private final VersionAdapter versionAdapter;
 
-    private final BukkitTask taskId;
+    private final WrappedTask taskId;
 
     public StatRenderer(Player observer, int sampleTicks, ItemStack mapItemStack, VersionAdapter versionAdapter, MapView mapView) {
         this.observer = observer;
@@ -39,14 +38,14 @@ public abstract class StatRenderer extends MapRenderer implements Runnable {
         this.versionAdapter = versionAdapter;
         this.sampleTicks = sampleTicks;
 
-        taskId = Bukkit.getScheduler().runTaskTimer(ClearLag.getInstance(), this, sampleTicks, sampleTicks);
+        taskId = ClearLag.scheduler().runTimer(this, sampleTicks, sampleTicks);
     }
 
     public void cancel() {
 
         mapView.removeRenderer(this);
 
-        taskId.cancel();
+        ClearLag.scheduler().cancelTask(taskId);
     }
 
     public abstract void tick();

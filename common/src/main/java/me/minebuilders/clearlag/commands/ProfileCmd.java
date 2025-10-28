@@ -17,10 +17,9 @@ import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author bob7l
@@ -77,6 +76,10 @@ public class ProfileCmd extends CommandModule {
             lang.sendMessage("header", sender);
 
             for (int i = 0; i < sizes.length; i++) {
+                if (sizes[i] == null || chunks[i] == null) {
+                    break;
+                }
+
                 ChunkKey c = chunks[i];
                 lineMessage.sendMessage(sender, (i + 1), c.getWorld().getName(), c.getX(), c.getZ(), sizes[i]);
             }
@@ -101,7 +104,7 @@ public class ProfileCmd extends CommandModule {
             throw new WrongCommandArgumentException(lang.getMessage("invalidprofiler"), args[1], sb.toString());
         }
 
-        profileSession.runTaskLater(ClearLag.getInstance(), Integer.parseInt(args[0]) * 20L);
+        ClearLag.scheduler().runLater(profileSession, Integer.parseInt(args[0]) * 20L);
         Bukkit.getPluginManager().registerEvents(profileSession, ClearLag.getInstance());
 
         lang.sendMessage("started", sender, args[0]);
@@ -120,9 +123,9 @@ public class ProfileCmd extends CommandModule {
             }
         }
 
-    private static abstract class ProfileSession extends BukkitRunnable implements Listener {
+    private static abstract class ProfileSession implements Listener, Runnable {
 
-        final Map<ChunkKey, MutableInt> chunkMap = new HashMap<>();
+        final Map<ChunkKey, MutableInt> chunkMap = new ConcurrentHashMap<>();
         final Callback<Map<ChunkKey, MutableInt>> callback;
 
         public ProfileSession(Callback<Map<ChunkKey, MutableInt>> callback) {
@@ -137,13 +140,14 @@ public class ProfileCmd extends CommandModule {
 
         protected void incrementMap(Chunk chunk) {
             final ChunkKey key = new ChunkKey(chunk);
-            MutableInt count = chunkMap.get(key);
-            if (count == null) {
-                count = new MutableInt(1);
-                chunkMap.put(key, count);
-            } else {
-                count.increment();
-            }
+            chunkMap.compute(key, (k, v) -> {
+                if (v == null) {
+                    return new MutableInt(1);
+                }
+
+                v.increment();
+                return v;
+            });
         }
     }
 
