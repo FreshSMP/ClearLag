@@ -19,5 +19,4 @@ public class EntityMaterialAttribute extends EntityAttribute<Entity> {
     public boolean containsData(Entity entity) {
         return (!reversed == (material == ((Item)entity).getItemStack().getType()));
     }
-
 }

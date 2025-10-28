@@ -1,6 +1,6 @@
 package me.minebuilders.clearlag.commands;
 
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.annotations.AutoWire;
 import me.minebuilders.clearlag.annotations.ConfigPath;
 import me.minebuilders.clearlag.config.ConfigHandler;
@@ -23,11 +23,9 @@ public class ReloadCmd extends CommandModule {
 
         lang.sendMessage("begin", sender);
 
-        for (Module mod : Clearlag.getModules()) {
-
+        for (Module mod : ClearLag.getModules()) {
             if (mod.isEnabled()) {
                 ConfigPath configPath = mod.getClass().getAnnotation(ConfigPath.class);
-
                 if ((configPath != null)) {
                     mod.setDisabled();
                 }
@@ -36,13 +34,11 @@ public class ReloadCmd extends CommandModule {
 
         configHandler.reloadConfig();
 
-        for (Module mod : Clearlag.getModules()) {
-
+        for (Module mod : ClearLag.getModules()) {
             if (!mod.isEnabled()) {
                 ConfigPath configPath = mod.getClass().getAnnotation(ConfigPath.class);
-
                 if (configPath == null || (configHandler.getConfig().get(configPath.path() + ".enabled") == null || configHandler.getConfig().getBoolean(configPath.path() + ".enabled"))) {
-                        mod.setEnabled();
+                    mod.setEnabled();
                 }
             }
         }
@@ -52,8 +48,6 @@ public class ReloadCmd extends CommandModule {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        //Todo: Inject language shit.
 
         lang.sendMessage("successful", sender);
     }

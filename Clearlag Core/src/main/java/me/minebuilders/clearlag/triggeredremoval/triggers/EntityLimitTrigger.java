@@ -39,18 +39,13 @@ public class EntityLimitTrigger extends CleanerTrigger {
     }
 
     private int countEntities() {
-
         int entities = 0;
-
         for (World world : Bukkit.getWorlds()) {
-
             if (!worldFilter.contains(world.getName())) {
-
                 for (Entity entity : world.getEntities()) {
-
-                    if (entityLimits.containsEntity(entity))
+                    if (entityLimits.containsEntity(entity)) {
                         ++entities;
-
+                    }
                 }
             }
         }

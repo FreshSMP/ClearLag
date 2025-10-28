@@ -17,5 +17,4 @@ public interface ConfigEntry {
     void merge(ConfigEntry value);
 
     void write(BufferedWriter writer, int tabs) throws IOException;
-
 }

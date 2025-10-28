@@ -1,9 +1,10 @@
 name: ClearLag
 author: bob7l
-description: Clear your lagg!
-main: me.minebuilders.clearlag.Clearlag
-version: 3.2.2
+description: Clear your lag!
+main: me.minebuilders.clearlag.ClearLag
+version: 4.0.0
 api-version: 1.13
+folia-supported: true
 commands:
   lagg:
     description: Clearlag base command!

@@ -1,6 +1,6 @@
 package me.minebuilders.clearlag.config;
 
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.config.configvalues.*;
 
 /**
@@ -22,9 +22,8 @@ public enum ConfigValueType {
 
     ConfigValueType(ConfigData configData) {
         this.configData = configData;
-
         try {
-            Clearlag.getInstance().getAutoWirer().wireObject(configData);
+            ClearLag.getInstance().getAutoWirer().wireObject(configData);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -33,5 +32,4 @@ public enum ConfigValueType {
     public ConfigData getConfigData() {
         return configData;
     }
-
 }

@@ -41,10 +41,11 @@ public class ConfigListEntry implements ConfigEntry {
     @Override
     public void merge(ConfigEntry entry) {
 
-        if (entry.getValue() instanceof List)
+        if (entry.getValue() instanceof List) {
             values = (List<Object>) entry.getValue();
-        else
+        } else {
             values = new ArrayList<>(1);
+        }
     }
 
     @Override
@@ -52,20 +53,14 @@ public class ConfigListEntry implements ConfigEntry {
 
         final StringBuilder tabLine = new StringBuilder();
 
-        for (int i = 0; i < tabs; ++i)
-            tabLine.append(ConfigEntry.TAB);
-
+        tabLine.append(ConfigEntry.TAB.repeat(Math.max(0, tabs)));
         writer.write(tabLine + key + ":");
-
-        if (values.isEmpty())
+        if (values.isEmpty()) {
             writer.write(" []");
-        else {
+        } else {
             tabLine.append(ConfigEntry.TAB);
-
             for (Object value : values) {
-
                 writer.newLine();
-
                 writer.write(tabLine + value.toString());
             }
         }

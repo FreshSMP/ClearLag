@@ -1,6 +1,6 @@
 package me.minebuilders.clearlag.tasks;
 
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.modules.EventModule;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -21,7 +21,7 @@ public class WarnTask extends EventModule {
 
 		if (p.hasPermission("lagg.clear")) {
 			p.sendMessage("§8§l]=============(§7§lClearlag Updated§8§l)=============[");
-			p.sendMessage("§6§lNew Version: §7§l" + Clearlag.getInstance().getDescription().getVersion());
+			p.sendMessage("§6§lNew Version: §7§l" + ClearLag.getInstance().getDescription().getVersion());
 			p.sendMessage("§6Please check §7§nhttp://dev.bukkit.org/bukkit-plugins/clearlagg/");
 
 			if (resetConfig) {

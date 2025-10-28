@@ -18,5 +18,4 @@ public abstract class ClearlagModule implements Module {
     public boolean isEnabled() {
         return enabled;
     }
-
 }

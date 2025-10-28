@@ -1,7 +1,6 @@
 package me.minebuilders.clearlag.modules;
 
-
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import org.bukkit.Bukkit;
 
 public abstract class TaskModule extends ClearlagModule implements Runnable {
@@ -16,7 +15,7 @@ public abstract class TaskModule extends ClearlagModule implements Runnable {
     }
 
     protected int startTask() {
-        return Bukkit.getScheduler().scheduleSyncRepeatingTask(Clearlag.getInstance(), this, getInterval(), getInterval());
+        return Bukkit.getScheduler().scheduleSyncRepeatingTask(ClearLag.getInstance(), this, getInterval(), getInterval());
     }
 
     @Override
@@ -28,5 +27,4 @@ public abstract class TaskModule extends ClearlagModule implements Runnable {
     public int getInterval() {
         return 20;
     }
-
 }

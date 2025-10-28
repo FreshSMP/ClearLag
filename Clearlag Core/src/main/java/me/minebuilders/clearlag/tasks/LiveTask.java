@@ -37,11 +37,17 @@ public class LiveTask extends TaskModule {
         for (World w : Bukkit.getWorlds()) {
             for (Entity e : w.getEntities()) {
                 if (mobtimer && e instanceof LivingEntity && !(e instanceof HumanEntity)) {
-                    if (e.getTicksLived() > moblivetime) e.remove();
+                    if (e.getTicksLived() > moblivetime) {
+                        e.remove();
+                    }
                 } else if (itemtimer && e instanceof Item) {
-                    if (e.getTicksLived() > itemlivetime) e.remove();
+                    if (e.getTicksLived() > itemlivetime) {
+                        e.remove();
+                    }
                 } else if (arrowtimer && e instanceof Arrow) {
-                    if (e.getTicksLived() > arrowkilltime) e.remove();
+                    if (e.getTicksLived() > arrowkilltime) {
+                        e.remove();
+                    }
                 }
             }
         }
@@ -51,5 +57,4 @@ public class LiveTask extends TaskModule {
     public int getInterval() {
         return configHandler.getConfig().getInt("live-time.interval") * 20;
     }
-
 }

@@ -19,26 +19,23 @@ public class MaterialSetCV implements ConfigData<EnumSet<Material>> {
 
     @Override
     public EnumSet<Material> getValue(String path) {
-
         List<String> types = configHandler.getConfig().getStringList(path);
 
         List<Material> materials = new LinkedList<>();
 
         for (String str : types) {
-
             Material material = Material.matchMaterial(str);
-
-            if (material == null)
+            if (material == null) {
                 material = Material.getMaterial(str);
+            }
 
-            if (material != null)
+            if (material != null) {
                 materials.add(material);
-            else {
+            } else {
                 Util.warning("Item type '" + str + "' does not match any Materials found on your Craftbukkit version.");
             }
         }
 
-        return (materials.size() > 0 ? EnumSet.copyOf(materials) : EnumSet.noneOf(Material.class));
+        return (!materials.isEmpty() ? EnumSet.copyOf(materials) : EnumSet.noneOf(Material.class));
     }
-
 }

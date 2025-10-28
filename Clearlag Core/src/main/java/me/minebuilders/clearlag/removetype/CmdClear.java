@@ -4,5 +4,4 @@ import me.minebuilders.clearlag.annotations.ConfigPath;
 
 @ConfigPath(path = "command-remove")
 public class CmdClear extends AutoClear {
-
 }

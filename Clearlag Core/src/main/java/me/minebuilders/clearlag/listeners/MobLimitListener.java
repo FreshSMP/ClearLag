@@ -1,6 +1,6 @@
 package me.minebuilders.clearlag.listeners;
 
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.annotations.ConfigPath;
 import me.minebuilders.clearlag.annotations.ConfigValue;
 import me.minebuilders.clearlag.modules.EventModule;
@@ -39,13 +39,17 @@ public class MobLimitListener extends EventModule implements Runnable {
 
         for (World world : Bukkit.getWorlds()) {
             for (Entity e : world.getEntities()) {
-                if (e instanceof Animals || e instanceof Villager) animals++;
-                if (e instanceof Creature) mobs++;
+                if (e instanceof Animals || e instanceof Villager) {
+                    animals++;
+                }
+
+                if (e instanceof Creature) {
+                    mobs++;
+                }
             }
         }
 
         canAnimalspawn = animals < this.animals;
-
         canMobspawn = mobs < this.mobs;
     }
 
@@ -53,22 +57,25 @@ public class MobLimitListener extends EventModule implements Runnable {
     public void setEnabled() {
         super.setEnabled();
 
-        sched = Bukkit.getScheduler().scheduleSyncRepeatingTask(Clearlag.getInstance(), this, interval * 20L, interval * 20L);
+        sched = Bukkit.getScheduler().scheduleSyncRepeatingTask(ClearLag.getInstance(), this, interval * 20L, interval * 20L);
     }
 
     @Override
     public void setDisabled() {
         super.setDisabled();
 
-        if (sched != -1) Bukkit.getServer().getScheduler().cancelTask(sched);
+        if (sched != -1) {
+            Bukkit.getServer().getScheduler().cancelTask(sched);
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onMobSpawn(CreatureSpawnEvent e) {
         Entity en = e.getEntity();
-        if (!canAnimalspawn && en instanceof Animals)
+        if (!canAnimalspawn && en instanceof Animals) {
             e.setCancelled(true);
-        else if (!canMobspawn && en instanceof Creature)
+        } else if (!canMobspawn && en instanceof Creature) {
             e.setCancelled(true);
+        }
     }
 }

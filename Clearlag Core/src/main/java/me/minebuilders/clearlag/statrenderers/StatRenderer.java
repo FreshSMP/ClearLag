@@ -1,12 +1,13 @@
 package me.minebuilders.clearlag.statrenderers;
 
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.adapters.VersionAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.map.*;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author bob7l
@@ -38,7 +39,7 @@ public abstract class StatRenderer extends MapRenderer implements Runnable {
         this.versionAdapter = versionAdapter;
         this.sampleTicks = sampleTicks;
 
-        taskId = Bukkit.getScheduler().runTaskTimer(Clearlag.getInstance(), this, sampleTicks, sampleTicks);
+        taskId = Bukkit.getScheduler().runTaskTimer(ClearLag.getInstance(), this, sampleTicks, sampleTicks);
     }
 
     public void cancel() {
@@ -54,29 +55,26 @@ public abstract class StatRenderer extends MapRenderer implements Runnable {
 
     @Override
     public void run() {
-
-        if (!observer.isOnline() || observer.getItemInHand() == null || !versionAdapter.isMapItemStackEqual(observer.getItemInHand(), mapItemStack)) {
-
+        if (!observer.isOnline() || !versionAdapter.isMapItemStackEqual(observer.getItemInHand(), mapItemStack)) {
             cancel();
-
             return;
         }
 
         pendingRefresh = true;
-
         tick();
     }
 
     @Override
-    public void render(MapView mapView, MapCanvas mapCanvas, Player player) {
-
+    public void render(@NotNull MapView mapView, MapCanvas mapCanvas, @NotNull Player player) {
         final MapCursorCollection mapCursorCollection = mapCanvas.getCursors();
 
-        while (mapCursorCollection.size() > 0)
+        while (mapCursorCollection.size() > 0) {
             mapCursorCollection.removeCursor(mapCursorCollection.getCursor(0));
+        }
 
-        if (!pendingRefresh)
+        if (!pendingRefresh) {
             return;
+        }
 
         for (int i = width; i >= 0; --i) {
             for (int j = height; j >= 0; --j) {
@@ -85,7 +83,6 @@ public abstract class StatRenderer extends MapRenderer implements Runnable {
         }
 
         draw(mapView, mapCanvas, player);
-
         pendingRefresh = false;
     }
 }

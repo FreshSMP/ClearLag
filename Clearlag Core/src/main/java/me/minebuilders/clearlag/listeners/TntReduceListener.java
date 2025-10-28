@@ -19,23 +19,18 @@ public class TntReduceListener extends EventModule {
 
     @EventHandler
     public void onBoom(EntityExplodeEvent event) {
-
         Entity e = event.getEntity();
-
-        if (e.getType() == EntityType.PRIMED_TNT) {
-
+        if (e.getType() == EntityType.TNT) {
             int counter = 0;
-
             for (Entity tnt : e.getNearbyEntities(checkRadius, checkRadius, checkRadius)) {
-
-                if (tnt.getType() == EntityType.PRIMED_TNT)
-
-                    if (counter > maxPrimed)
+                if (tnt.getType() == EntityType.TNT) {
+                    if (counter > maxPrimed) {
                         tnt.remove();
-                else
-                    ++counter;
+                    } else {
+                        ++counter;
+                    }
+                }
             }
         }
     }
-
 }

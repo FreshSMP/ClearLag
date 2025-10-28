@@ -16,5 +16,4 @@ public class ColoredStringCV implements ConfigData<String> {
     public String getValue(String path) {
         return Util.color(configHandler.getConfig().getString(path));
     }
-
 }

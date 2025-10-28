@@ -34,13 +34,11 @@ public class TreeConfigEntry implements ConfigEntry {
     }
 
     public void merge(TreeConfigEntry mergingTree) {
-
         for (ConfigEntry entry : entries) {
-
             for (ConfigEntry mergingEntry : mergingTree.entries) {
-
-                if (entry.getKey().equals(mergingEntry.getKey()))
+                if (entry.getKey().equals(mergingEntry.getKey())) {
                     entry.merge(mergingEntry);
+                }
             }
         }
     }
@@ -58,13 +56,12 @@ public class TreeConfigEntry implements ConfigEntry {
     @Override
     public void write(BufferedWriter writer, int tabs) throws IOException {
 
-        for (int i = 0; i < tabs; ++i)
+        for (int i = 0; i < tabs; ++i) {
             writer.write(ConfigEntry.TAB);
+        }
 
         writer.write(key + ":");
-
         writer.newLine();
-
         for (ConfigEntry entry : entries) {
             entry.write(writer, tabs + 1);
         }

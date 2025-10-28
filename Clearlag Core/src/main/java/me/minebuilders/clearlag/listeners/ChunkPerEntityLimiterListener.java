@@ -1,6 +1,6 @@
 package me.minebuilders.clearlag.listeners;
 
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.annotations.ConfigPath;
 import me.minebuilders.clearlag.annotations.ConfigValue;
 import me.minebuilders.clearlag.config.ConfigValueType;
@@ -34,22 +34,16 @@ public class ChunkPerEntityLimiterListener extends EventModule {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onSpawn(CreatureSpawnEvent event) {
-
         final Entity entity = event.getEntity();
-
         final Integer limit = entityLimits.getValue(entity);
-
         if (limit != null) {
-
             final Entity[] entities = event.getLocation().getChunk().getEntities();
-
             if (entities.length >= limit) {
-
                 int count = 0;
-
                 for (Entity e : entities)
-                    if (entity.getType() == e.getType() && entityLimits.getValue(e).equals(limit))
+                    if (entity.getType() == e.getType() && entityLimits.getValue(e).equals(limit)) {
                         ++count;
+                    }
 
                 event.setCancelled(count >= limit);
             }
@@ -57,26 +51,19 @@ public class ChunkPerEntityLimiterListener extends EventModule {
     }
 
     private void purgeEntities(final Entity[] entities) {
-
         if (entities.length > 0) {
-
             final EntityMap<Integer> entityMap = new EntityMap<>();
-
             for (Entity entity : entities) {
-
                 final Integer limit = entityLimits.getValue(entity);
-
                 if (limit != null) {
-
                     Integer amount = entityMap.getValue(entity);
-
-                    if (amount == null)
+                    if (amount == null) {
                         amount = 1;
-                    else
+                    } else {
                         ++amount;
+                    }
 
                     entityMap.set(entity.getType(), amount);
-
                     if (amount > limit) {
                         entity.remove();
                     }
@@ -101,34 +88,28 @@ public class ChunkPerEntityLimiterListener extends EventModule {
 
             final List<World> worlds = Bukkit.getWorlds();
 
-            if (worlds.isEmpty())
+            if (worlds.isEmpty()) {
                 return;
+            }
 
-            if (worldIndex >= worlds.size())
+            if (worldIndex >= worlds.size()) {
                 worldIndex = 0;
+            }
 
             int processedChunks = 0;
 
             for (World world = worlds.get(worldIndex); processedChunks < chunkBatchSize;) {
-
                 final Chunk[] chunks = world.getLoadedChunks();
-
                 if (chunks.length > chunkIndex) {
-
                     for (; chunkIndex < chunks.length && processedChunks < chunkBatchSize; ++chunkIndex) {
-
                         purgeEntities(chunks[chunkIndex].getEntities());
-
                         ++processedChunks;
                     }
                 }
 
                 if (processedChunks < chunkBatchSize) {
-
                     if (++worldIndex >= worlds.size()) {
-
                         worldIndex = 0;
-
                         return;
                     }
 
@@ -142,10 +123,11 @@ public class ChunkPerEntityLimiterListener extends EventModule {
     public void setEnabled() {
         super.setEnabled();
 
-        if (Clearlag.getInstance().getConfig().getBoolean("per-entity-chunk-entity-limiter.passive-cleaner.passive-cleaning-enabled"))
-            passivePurger = new PassivePurger(Clearlag.getInstance().getConfig().getInt("per-entity-chunk-entity-limiter.passive-cleaner.chunk-batch-size")).runTaskTimer(Clearlag.getInstance(),
-                    Clearlag.getInstance().getConfig().getInt("per-entity-chunk-entity-limiter.passive-cleaner.check-interval"),
-                    Clearlag.getInstance().getConfig().getInt("per-entity-chunk-entity-limiter.passive-cleaner.check-interval"));
+        if (ClearLag.getInstance().getConfig().getBoolean("per-entity-chunk-entity-limiter.passive-cleaner.passive-cleaning-enabled")) {
+            passivePurger = new PassivePurger(ClearLag.getInstance().getConfig().getInt("per-entity-chunk-entity-limiter.passive-cleaner.chunk-batch-size")).runTaskTimer(ClearLag.getInstance(),
+                    ClearLag.getInstance().getConfig().getInt("per-entity-chunk-entity-limiter.passive-cleaner.check-interval"),
+                    ClearLag.getInstance().getConfig().getInt("per-entity-chunk-entity-limiter.passive-cleaner.check-interval"));
+        }
     }
 
     @Override

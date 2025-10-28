@@ -34,15 +34,15 @@ public class Util {
     }
 
     public static void shiftRight(Object[] list, int dropIndex) {
-
-        if (list.length < 2) return;
+        if (list.length < 2) {
+            return;
+        }
 
         System.arraycopy(list, dropIndex, list, dropIndex + 1, list.length - 1 - dropIndex);
-
     }
 
     public static void postToMainThread(Runnable runnable) {
-        Bukkit.getScheduler().runTask(Clearlag.getInstance(), runnable);
+        Bukkit.getScheduler().runTask(ClearLag.getInstance(), runnable);
     }
 
     public static boolean isInteger(String s) {
@@ -50,14 +50,24 @@ public class Util {
     }
 
     public static boolean isInteger(String s, int radix) {
-        if (s.isEmpty()) return false;
+        if (s.isEmpty()) {
+            return false;
+        }
+
         for (int i = 0; i < s.length(); i++) {
             if (i == 0 && s.charAt(i) == '-') {
-                if (s.length() == 1) return false;
-                else continue;
+                if (s.length() == 1) {
+                    return false;
+                } else {
+                    continue;
+                }
             }
-            if (Character.digit(s.charAt(i), radix) < 0) return false;
+
+            if (Character.digit(s.charAt(i), radix) < 0) {
+                return false;
+            }
         }
+
         return true;
     }
 
@@ -77,9 +87,7 @@ public class Util {
     }
 
     public static EntityType getEntityTypeFromString(String s) {
-        @SuppressWarnings("deprecation")
         EntityType et = EntityType.fromName(s);
-
         if (et != null) {
             return et;
         }
@@ -93,6 +101,7 @@ public class Util {
                 }
             }
         }
+
         return null;
     }
 
@@ -101,36 +110,28 @@ public class Util {
     }
 
     public static String getBukkitVersion() {
-
         String[] v = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3].split("-")[0].split("_");
-
         return v[0].replace("v", "") + "." + v[1];
     }
 
     public static Date parseTime(String time) {
-
         try {
-
             String[] frag = time.split("-");
-
-            if (frag.length < 2)
+            if (frag.length < 2) {
                 return new Date();
+            }
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
             return dateFormat.parse(frag[0] + "-" + frag[1] + "-" + frag[2]);
-
         } catch (Exception e) {
             return new Date();
         }
     }
 
     public static String getTime(long time) {
-
         long seconds = Math.abs(time) / 1000L;
 
         final StringBuilder message = new StringBuilder();
-
         if (seconds >= 86400) {
             int days = (int) (seconds / 86400);
             seconds %= 86400;
@@ -142,7 +143,9 @@ public class Util {
             int hours = (int) (seconds / 3600);
             seconds %= 3600;
 
-            if (message.length() > 0) message.append(", ");
+            if (!message.isEmpty()) {
+                message.append(", ");
+            }
 
             message.append(hours).append(hours > 1 ? " hours" : " hour");
         }
@@ -151,18 +154,21 @@ public class Util {
             int min = (int) (seconds / 60);
             seconds %= 60;
 
-            if (message.length() > 0) message.append(", ");
+            if (!message.isEmpty()) {
+                message.append(", ");
+            }
 
             message.append(min).append(min > 1 ? " minutes" : " minute");
         }
 
         if (seconds >= 0) {
-            if (message.length() > 0) message.append(", ");
+            if (!message.isEmpty()) {
+                message.append(", ");
+            }
 
             message.append(seconds).append(seconds > 1 ? " seconds" : " second");
         }
 
         return message.toString();
     }
-
 }

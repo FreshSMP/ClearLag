@@ -27,24 +27,17 @@ public class LegacyVersionAdapter implements VersionAdapter {
 
     @Override
     public boolean isCompatible() {
-        return (Material.getMaterial("MAP") != null && mcItemSetAge != null && itemField != null);
+        return Material.getMaterial("MAP") != null;
     }
 
     @Override
     public ItemStack createMapItemStack(MapView mapView) {
-
         final ItemStack mapItemStack = new ItemStack(Material.MAP, 1);
-
         try {
-
             final Method method = MapView.class.getDeclaredMethod("getId");
-
             method.setAccessible(true);
-
             short id = (short) method.invoke(mapView);
-
             mapItemStack.setDurability(id);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -59,14 +52,10 @@ public class LegacyVersionAdapter implements VersionAdapter {
 
     @Override
     public void setItemEntityAge(Item item, int age) {
-
         try {
             item.setTicksLived(age);
-
             final Object nmsEntity = itemField.get(item);
-
             mcItemSetAge.set(nmsEntity, age);
-
         } catch (Throwable e) {
             e.printStackTrace();
         }

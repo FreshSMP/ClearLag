@@ -17,6 +17,5 @@ public class EntityHasMetaAttribute extends EntityAttribute<Entity> {
     public boolean containsData(Entity entity) {
         return (!reversed == (entity.hasMetadata(meta)));
     }
-
 }
 

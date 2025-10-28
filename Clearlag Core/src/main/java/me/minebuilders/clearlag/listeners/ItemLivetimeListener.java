@@ -24,11 +24,8 @@ public class ItemLivetimeListener extends EventModule {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onItemSpawn(ItemSpawnEvent event) {
-
         final Integer age = items.get(event.getEntity().getItemStack().getType());
-
         if (age != null) {
-
             final int ageInTicks = age * 20;
 
             if (event.getEntity().getTicksLived() < ageInTicks || event.getEntity().getTicksLived() == 0) {

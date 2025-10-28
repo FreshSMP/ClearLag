@@ -1,6 +1,6 @@
 package me.minebuilders.clearlag.tasks;
 
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.Util;
 import me.minebuilders.clearlag.annotations.AutoWire;
 import me.minebuilders.clearlag.annotations.ConfigPath;
@@ -48,13 +48,14 @@ public class TPSCheckTask extends TaskModule {
         double tps = tpsTask.getTPS();
 
         if (tps <= tpsTrigger && isRecovered) {
-
-            if (broadcastEnabled)
+            if (broadcastEnabled) {
                 Bukkit.broadcastMessage(triggerBroadcastMessage);
+            }
 
             try {
-                for (String s : commands)
+                for (String s : commands) {
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s);
+                }
             } catch (Exception e) {
                 Util.warning("TPSCheckTask was unable to dispatch commands!");
             } finally {
@@ -62,12 +63,13 @@ public class TPSCheckTask extends TaskModule {
             }
         } else if (tps >= tpsRecover && !isRecovered) {
             try {
-
-                if (broadcastEnabled)
+                if (broadcastEnabled) {
                     Bukkit.broadcastMessage(recoverBroadcastMessage);
+                }
 
-                for (String s : recoverCommands)
+                for (String s : recoverCommands) {
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s);
+                }
             } catch (Exception e) {
                 Util.warning("TPSCheckTask was unable to dispatch commands!");
             } finally {
@@ -83,7 +85,6 @@ public class TPSCheckTask extends TaskModule {
 
     @Override
     protected int startTask() {
-        return Bukkit.getScheduler().scheduleSyncRepeatingTask(Clearlag.getInstance(), this, 420, getInterval());
+        return Bukkit.getScheduler().scheduleSyncRepeatingTask(ClearLag.getInstance(), this, 420, getInterval());
     }
-
 }

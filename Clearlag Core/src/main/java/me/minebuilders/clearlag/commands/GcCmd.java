@@ -12,11 +12,7 @@ public class GcCmd extends CommandModule {
 
     @Override
     protected void run(CommandSender sender, String[] args) {
-
         message.sendMessage(sender);
-
         System.gc();
-
     }
-
 }

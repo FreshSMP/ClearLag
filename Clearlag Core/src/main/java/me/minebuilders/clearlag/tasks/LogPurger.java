@@ -1,6 +1,6 @@
 package me.minebuilders.clearlag.tasks;
 
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.Util;
 import me.minebuilders.clearlag.annotations.AutoWire;
 import me.minebuilders.clearlag.annotations.ConfigPath;
@@ -46,7 +46,6 @@ public class LogPurger extends TaskModule {
 
     @Override
     public int startTask() {
-        return Bukkit.getScheduler().runTaskLaterAsynchronously(Clearlag.getInstance(), this, 0L).getTaskId();
+        return Bukkit.getScheduler().runTaskLaterAsynchronously(ClearLag.getInstance(), this, 0L).getTaskId();
     }
-
 }

@@ -1,7 +1,7 @@
 package me.minebuilders.clearlag.listeners;
 
 import me.minebuilders.clearlag.ChunkKey;
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.annotations.ConfigPath;
 import me.minebuilders.clearlag.annotations.ConfigValue;
 import me.minebuilders.clearlag.modules.EventModule;
@@ -29,36 +29,28 @@ public class HopperLimitListener extends EventModule implements Runnable {
 
     @EventHandler
     public void onHopper(InventoryMoveItemEvent event) {
-
         if (event.getSource().getHolder() instanceof Hopper) {
-
             ChunkKey chunkKey = new ChunkKey(((Hopper) event.getSource().getHolder()).getChunk());
-
             Integer transfers = hopperDataMap.get(chunkKey);
-
             if (transfers == null) {
                 transfers = 0;
             }
 
-            if (transfers >= transferLimit)
+            if (transfers >= transferLimit) {
                 event.setCancelled(true);
-            else
+            } else {
                 ++transfers;
+            }
 
             hopperDataMap.put(chunkKey, transfers);
         }
     }
 
-
     @Override
     public void run() {
-
         Iterator<Map.Entry<ChunkKey, Integer>> entries = hopperDataMap.entrySet().iterator();
-
         while (entries.hasNext()) {
-
             Map.Entry<ChunkKey, Integer> entry = entries.next();
-
             if (entry.getValue() == 0) {
                 entries.remove();
             } else {
@@ -71,13 +63,12 @@ public class HopperLimitListener extends EventModule implements Runnable {
     public void setEnabled() {
         super.setEnabled();
 
-        schedulerID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Clearlag.getInstance(), this, checkInterval * 20L, checkInterval * 20L);
+        schedulerID = Bukkit.getScheduler().scheduleSyncRepeatingTask(ClearLag.getInstance(), this, checkInterval * 20L, checkInterval * 20L);
     }
 
     @Override
     public void setDisabled() {
         super.setDisabled();
-
         if (schedulerID != -1) {
             Bukkit.getServer().getScheduler().cancelTask(schedulerID);
             hopperDataMap = new HashMap<>();

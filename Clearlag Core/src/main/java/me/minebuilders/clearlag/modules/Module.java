@@ -7,5 +7,4 @@ public interface Module {
 	void setDisabled();
 
 	boolean isEnabled();
-	
 }

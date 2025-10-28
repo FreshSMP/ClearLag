@@ -37,17 +37,11 @@ public class ConfigUpdater {
     public int updateConfig(File writeToFile) throws Exception {
 
         int mergedVariables = 0;
-
         for (ConfigEntry updatingToEntry : updatingToConfig) {
-
             if (!(updatingToEntry instanceof ConfigCommentEntry) && !nonMergableKeys.contains(updatingToEntry.getKey())) {
-
                 for (ConfigEntry updatingFromEntry : updatingFromConfig) {
-
                     if (updatingToEntry.getKey().equals(updatingFromEntry.getKey())) {
-
                         updatingToEntry.merge(updatingFromEntry);
-
                         ++mergedVariables;
                     }
                 }
@@ -55,19 +49,12 @@ public class ConfigUpdater {
         }
 
         for (String carriedOverPath : carriedOverPaths) {
-
             for (ConfigEntry updatingFromEntry : updatingFromConfig) {
-
                 if (updatingFromEntry.getKey().equals(carriedOverPath)) {
-
                     final ListIterator<ConfigEntry> updatingToIter = updatingToConfig.listIterator();
-
                     while (updatingToIter.hasNext()) {
-
                         if (updatingToIter.next().getKey().equals(carriedOverPath)) {
-
                             updatingToIter.set(updatingFromEntry);
-
                             break;
                         }
                     }
@@ -76,9 +63,9 @@ public class ConfigUpdater {
         }
 
         try (final BufferedWriter bw = new BufferedWriter(new FileWriter(writeToFile))) {
-
-            for (ConfigEntry updatingToEntry : updatingToConfig)
+            for (ConfigEntry updatingToEntry : updatingToConfig) {
                 updatingToEntry.write(bw, 0);
+            }
         }
 
         return (updatingToConfig.size() - mergedVariables);
@@ -87,74 +74,56 @@ public class ConfigUpdater {
     private List<ConfigEntry> loadConfig(InputStream in) throws Exception {
 
         final BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-
         final List<ConfigEntry> configEntryList = new ArrayList<ConfigEntry>();
-
         final Stack<TreeEntryNode> treeStack = new Stack<>();
 
         ConfigListEntry currentListEntry = null;
-
         String line = reader.readLine();
-
         String nextLine = reader.readLine();
 
         do {
             final int position = getPosition(line);
-
-            while (!treeStack.isEmpty() && treeStack.peek().position >= position)
+            while (!treeStack.isEmpty() && treeStack.peek().position >= position) {
                 treeStack.pop();
+            }
 
-            final String trimmedLine = line.substring(position); //Remove leading white spaces.
-
+            final String trimmedLine = line.substring(position);
             if (trimmedLine.startsWith("-")) {
-
-                if (currentListEntry != null)
+                if (currentListEntry != null) {
                     currentListEntry.add(trimmedLine);
-
+                }
             } else {
-
                 final TreeEntryNode currentTree = (treeStack.isEmpty() ? null : treeStack.peek());
-
                 ConfigEntry configEntry;
-
-                //Comment
                 if (isComment(trimmedLine)) {
                     configEntry = new ConfigCommentEntry(line);
                 } else {
-
                     final String[] bits = trimmedLine.split(":", 2);
-
                     final String key = bits[0];
-
                     //Small, or value is a comment? Must be a tree-key
                     if (bits.length <= 1 || isComment(bits[1])) {
-
                         if (nextLine != null && nextLine.trim().startsWith("-")) {
                             currentListEntry = new ConfigListEntry(key);
                             configEntry = currentListEntry;
                         } else {
-
                             final TreeEntryNode treeEntryNode = new TreeEntryNode(new TreeConfigEntry(key), position);
-
                             configEntry = treeEntryNode.treeConfigEntry;
-
                             treeStack.add(treeEntryNode);
                         }
-
                     } else {
                         configEntry = new ConfigBasicEntry(key, bits[1]);
                     }
                 }
 
                 //Are we currently in a tree? If not, add the new value/tree directly
-                if (currentTree != null)
+                if (currentTree != null) {
                     currentTree.treeConfigEntry.addConfigEntry(configEntry);
-                else
+                } else {
                     configEntryList.add(configEntry);
+                }
             }
 
             line = nextLine;
-
         } while (((nextLine = reader.readLine()) != null && line != null) || line != null);
 
         return configEntryList;
@@ -162,8 +131,9 @@ public class ConfigUpdater {
 
     private boolean isComment(String str) {
 
-        if (str.isEmpty() || str.startsWith("#"))
+        if (str.isEmpty() || str.startsWith("#")) {
             return true;
+        }
 
         final String noSpaceStr = str.replace(" ", "");
 
@@ -185,9 +155,11 @@ public class ConfigUpdater {
     private int getPosition(String str) {
         int i = 0;
 
-        for (; i < str.length(); ++i)
-            if (str.charAt(i) != ' ')
+        for (; i < str.length(); ++i) {
+            if (str.charAt(i) != ' ') {
                 break;
+            }
+        }
 
         return i;
     }

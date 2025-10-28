@@ -24,5 +24,4 @@ public class KillmobsCmd extends CommandModule {
     protected void run(CommandSender sender, String[] args) {
         message.sendMessage(sender, entityManager.removeEntities(killMobsClear));
     }
-
 }

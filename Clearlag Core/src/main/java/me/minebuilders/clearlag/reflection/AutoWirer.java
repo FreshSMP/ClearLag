@@ -15,45 +15,36 @@ public class AutoWirer {
     private final List<Object> wireables = new ArrayList<>();
 
     public void addWireable(Object obj) {
-
-        if (obj == null)
+        if (obj == null) {
             throw new NullPointerException();
+        }
 
         wireables.add(obj);
     }
 
     public void addWireables(Object[] obs) {
-
-        for (Object obj : obs)
+        for (Object obj : obs) {
             addWireable(obj);
+        }
     }
 
     public void wireObject(Object object) throws IllegalAccessException {
-
         Class<?> clazz = object.getClass();
-
         while (clazz != null && clazz != Object.class && clazz != Module.class) {
-
             for (Field field : clazz.getDeclaredFields()) {
-
                 if (field.isAnnotationPresent(AutoWire.class)) {
-
                     field.setAccessible(true);
-
                     if (field.get(object) == null) {
-
                         for (Object wire : wireables) {
-
                             if (field.getType().isAssignableFrom(wire.getClass())) {
-
                                 field.set(object, wire);
-
                                 break;
                             }
                         }
                     }
                 }
             }
+
             clazz = clazz.getSuperclass();
         }
     }

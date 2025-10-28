@@ -1,5 +1,7 @@
 package me.minebuilders.clearlag;
 
+import com.tcoded.folialib.FoliaLib;
+import com.tcoded.folialib.impl.PlatformScheduler;
 import me.minebuilders.clearlag.adapters.LatestVersionAdapter;
 import me.minebuilders.clearlag.adapters.LegacyVersionAdapter;
 import me.minebuilders.clearlag.adapters.VersionAdapter;
@@ -20,12 +22,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Clearlag extends JavaPlugin {
+public class ClearLag extends JavaPlugin {
 
     @AutoWire
     private ConfigHandler config;
 
-    private static Clearlag instance;
+    private static ClearLag instance;
+
+    private static PlatformScheduler scheduler;
 
     private static Module[] modules;
 
@@ -35,10 +39,17 @@ public class Clearlag extends JavaPlugin {
 
     private final long initialBootTimestamp = System.currentTimeMillis();
 
+    public static PlatformScheduler scheduler() {
+        return scheduler;
+    }
+
     @Override
     public void onEnable() {
 
-        Clearlag.instance = this;
+        ClearLag.instance = this;
+
+        FoliaLib foliaLib = new FoliaLib(this);
+        scheduler = foliaLib.getScheduler();
 
         versionAdapter = findVersionAdapter();
 
@@ -139,13 +150,12 @@ public class Clearlag extends JavaPlugin {
         for (Class<? extends VersionAdapter> versionAdapterType : versionAdapterTypes) {
 
             try {
-
                 final VersionAdapter tryingVersionAdapter = versionAdapterType.newInstance();
-
-                if (tryingVersionAdapter.isCompatible())
+                if (tryingVersionAdapter.isCompatible()) {
                     return tryingVersionAdapter;
-
-            } catch (Throwable ignored) { }
+                }
+            } catch (Throwable ignored) {
+            }
         }
 
         return null;
@@ -156,9 +166,7 @@ public class Clearlag extends JavaPlugin {
         Util.log("Loading modules...");
 
         for (Module mod : modules) {
-
             ConfigPath configPath = mod.getClass().getAnnotation(ConfigPath.class);
-
             if (configPath == null || (getConfig().get(configPath.path() + ".enabled") == null || getConfig().getBoolean(configPath.path() + ".enabled"))) {
                 mod.setEnabled();
             }
@@ -180,7 +188,7 @@ public class Clearlag extends JavaPlugin {
         Util.log("Clearlag is now disabled!");
     }
 
-    public static Clearlag getInstance() {
+    public static ClearLag getInstance() {
         return instance;
     }
 
@@ -189,9 +197,7 @@ public class Clearlag extends JavaPlugin {
     }
 
     public static Module getModule(String name) {
-
         for (Module module : modules) {
-
             if (module.getClass().getSimpleName().equalsIgnoreCase(name)) {
                 return module;
             }

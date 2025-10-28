@@ -42,8 +42,9 @@ public class CommandExecuteJob extends ClearlagModule {
         super.setDisabled();
 
         try {
-            for (String s : recoverCommands)
+            for (String s : recoverCommands) {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s);
+            }
         } catch (Exception e) {
             Util.warning("CommandExecuteJob was unable to dispatch commands!");
         }
@@ -52,8 +53,9 @@ public class CommandExecuteJob extends ClearlagModule {
     @Override
     public boolean isEnabled() {
 
-        if (super.isEnabled() && !cleanerTrigger.shouldTrigger())
+        if (super.isEnabled() && !cleanerTrigger.shouldTrigger()) {
             setDisabled();
+        }
 
         return super.isEnabled();
     }

@@ -39,11 +39,10 @@ public class MessageTree implements Message {
     }
 
     private Message getNextMessage() {
-
         final Message message = messageList.get(currentReadIndex++);
-
-        if (messageList.size() >= currentReadIndex)
+        if (messageList.size() >= currentReadIndex) {
             resetReadIndex();
+        }
 
         return message;
     }
@@ -71,9 +70,7 @@ public class MessageTree implements Message {
         getNextMessage().broadcastMessage(obj);
     }
 
-
     public void resetReadIndex() {
         currentReadIndex = 0;
     }
-
 }

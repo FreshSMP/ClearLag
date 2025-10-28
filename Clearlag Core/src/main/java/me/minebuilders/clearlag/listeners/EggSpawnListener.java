@@ -20,11 +20,8 @@ public class EggSpawnListener extends EventModule {
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onCreatureSpawn(CreatureSpawnEvent event) {
-
 		if (event.getSpawnReason() == SpawnReason.SPAWNER_EGG) {
-
 			final Entity e = event.getEntity();
-
 			if (countNearbyLivingEntities(e, checkRadius) > maxMobs) {
 				event.setCancelled(true);
 			}
@@ -32,12 +29,11 @@ public class EggSpawnListener extends EventModule {
 	}
 
 	private int countNearbyLivingEntities(Entity checkEntity, int checkRadius) {
-
 		int count = 0;
-
-		//Use a loop because in some CraftBukkit's, this returns an array rather then a list
-		for (Entity ignored : checkEntity.getNearbyEntities(checkRadius, checkRadius, checkRadius))
-			++count;
+		//Use a loop because in some CraftBukkit's, this returns an array rather than a list
+		for (Entity ignored : checkEntity.getNearbyEntities(checkRadius, checkRadius, checkRadius)) {
+            ++count;
+        }
 
 		return count;
 	}

@@ -1,6 +1,6 @@
 package me.minebuilders.clearlag.modules;
 
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -11,7 +11,7 @@ public abstract class EventModule extends ClearlagModule implements Listener {
 	public void setEnabled() {
 		super.setEnabled();
 
-		Bukkit.getPluginManager().registerEvents(this, Clearlag.getInstance());
+		Bukkit.getPluginManager().registerEvents(this, ClearLag.getInstance());
 	}
 
 	@Override
@@ -20,5 +20,4 @@ public abstract class EventModule extends ClearlagModule implements Listener {
 
 		HandlerList.unregisterAll(this);
 	}
-
 }

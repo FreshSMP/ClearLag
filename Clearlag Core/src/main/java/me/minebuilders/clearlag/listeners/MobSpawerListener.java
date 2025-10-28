@@ -28,7 +28,6 @@ public class MobSpawerListener extends EventModule {
     private boolean isOverLimit(List<Entity> en) {
         Iterator<Entity> ee = en.iterator();
         int amount = 0;
-
         while (ee.hasNext()) {
             if (ee.next().isDead()) {
                 ee.remove();
@@ -36,6 +35,7 @@ public class MobSpawerListener extends EventModule {
                 amount++;
             }
         }
+
         return (amount >= maxSpawn);
     }
 
@@ -43,20 +43,12 @@ public class MobSpawerListener extends EventModule {
     public void onCreatureSpawn(CreatureSpawnEvent event) {
 
         final LivingEntity e = event.getEntity();
-
         if (event.getSpawnReason() == SpawnReason.SPAWNER) {
-
             ChunkKey key = new ChunkKey(event.getLocation().getChunk());
-
-            List<Entity> entities = map.get(key);
-
-            if (entities == null) {
-                entities = new ArrayList<>();
-                map.put(key, entities);
-            }
-
-            if (removeMobsOnChunkUnload)
+            List<Entity> entities = map.computeIfAbsent(key, k -> new ArrayList<>());
+            if (removeMobsOnChunkUnload) {
                 e.setRemoveWhenFarAway(true);
+            }
 
             if (!isOverLimit(entities)) {
                 entities.add(e);
@@ -71,7 +63,7 @@ public class MobSpawerListener extends EventModule {
         map.remove(new ChunkKey(event.getChunk()));
     }
 
-    private class ChunkKey {
+    private static class ChunkKey {
 
         private final int x;
         private final int z;
@@ -91,13 +83,13 @@ public class MobSpawerListener extends EventModule {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == this)
+            if (obj == this) {
                 return true;
+            }
 
             ChunkKey ck = (ChunkKey) obj;
 
             return (ck.x == x && ck.z == z && ck.worldUuid == worldUuid);
         }
     }
-
 }

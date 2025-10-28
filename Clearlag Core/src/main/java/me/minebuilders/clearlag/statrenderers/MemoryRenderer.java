@@ -37,7 +37,6 @@ public class MemoryRenderer extends StatRenderer {
         super(observer, sampleTicks, mapItemStack, versionAdapter, mapView);
 
         for (MemoryPoolMXBean memoryBean : ManagementFactory.getMemoryPoolMXBeans()) {
-
             if (memoryBean.getType() == MemoryType.HEAP) {
                 memoryBeans.add(memoryBean);
             }
@@ -48,24 +47,17 @@ public class MemoryRenderer extends StatRenderer {
         int colorIndex = 0;
 
         for (int i = memoryBeans.size() - 1; i >= 0; --i) {
-
             final MemoryPoolMXBean memoryBean = memoryBeans.get(i);
-
             final int color = colorIndex >= colorTypes.length ? colorIndex = 0 : colorIndex++;
 
             observer.sendMessage(ChatColor.RED + " - " + ChatColor.DARK_GREEN + memoryBean.getName() + ChatColor.DARK_GRAY + ": " + ChatColor.GREEN + colorTypes[color]);
-
         }
     }
 
     private long getTotalGCCompleteTime() {
-
         long totalGarbageCollections = 0;
-
         for (GarbageCollectorMXBean gc : gcBeans) {
-
             long count = gc.getCollectionTime();
-
             if (count >= 0) {
                 totalGarbageCollections += count;
             }
@@ -74,52 +66,41 @@ public class MemoryRenderer extends StatRenderer {
         return totalGarbageCollections;
     }
 
-
     @Override
     public void tick() {
-
         final MemorySampleColumn column = new MemorySampleColumn();
-
         for (MemoryPoolMXBean memoryBean : memoryBeans) {
             column.addMemorySample(new MemorySample(RAMUtil.toMB(memoryBean.getUsage().getUsed())));
         }
 
         final long totalGCTime = getTotalGCCompleteTime();
-
         final long gcTime = (totalGCTime - gcLastPauseTime);
 
-        if (gcTime > 0)
+        if (gcTime > 0) {
             column.garbageCollectionTime = (int) gcTime;
+        }
 
         this.gcLastPauseTime = totalGCTime;
 
         memorySamples.addLast(column);
 
-        while (memorySamples.size() > width)
+        while (memorySamples.size() > width) {
             memorySamples.removeFirst();
+        }
     }
 
     @Override
     public void draw(MapView mapView, MapCanvas mapCanvas, Player player) {
-
         final int maxHeapSize = RAMUtil.toMB(Runtime.getRuntime().totalMemory());
 
         int x = 0;
-
         for (MemorySampleColumn memorySampleColumn : memorySamples) {
-
             int colorIndex = 0;
-
             int baseY = 0;
-
             int drawTo = height;
-
             for (int i = memorySampleColumn.memorySamples.size() - 1; i >= 0; --i) {
-
                 final MemorySample sample = memorySampleColumn.memorySamples.get(i);
-
                 final byte color = memoryPalettes[colorIndex >= memoryPalettes.length ? colorIndex = 0 : colorIndex++];
-
                 final int y = (((sample.usageInMB + baseY) * height) / maxHeapSize);
 
                 for (int j = height - y; j < drawTo; ++j) {
@@ -134,9 +115,7 @@ public class MemoryRenderer extends StatRenderer {
         }
 
         x = 0;
-
         for (MemorySampleColumn memorySampleColumn : memorySamples) {
-
             if (memorySampleColumn.didGarbageCollection()) {
                 mapCanvas.drawText(x, height - 8, MinecraftFont.Font, "§32;" + memorySampleColumn.garbageCollectionTime + "ms");
             }
@@ -145,9 +124,7 @@ public class MemoryRenderer extends StatRenderer {
         }
 
         for (double yPos : new double[]{0.0, 0.25, 0.50, 0.75}) {
-
             final int y = (int) (((maxHeapSize * yPos) * height) / maxHeapSize);
-
             mapCanvas.drawText(5, y, MinecraftFont.Font,
                     "§48;" + (Math.round(((maxHeapSize * (1 - yPos)) / 1000.0) * 10.0) / 10.0) + "GB"
             );
@@ -163,7 +140,6 @@ public class MemoryRenderer extends StatRenderer {
     }
 
     private static class MemorySampleColumn {
-
         private final List<MemorySample> memorySamples = new ArrayList<>(5);
 
         private int garbageCollectionTime = -1;
@@ -184,6 +160,5 @@ public class MemoryRenderer extends StatRenderer {
         public MemorySample(int usageInMB) {
             this.usageInMB = usageInMB;
         }
-
     }
 }

@@ -16,11 +16,10 @@ public class StringSetCV implements ConfigData<Set<String>> {
 
     @Override
     public Set<String> getValue(String path) {
-
-        if (configHandler.getConfig().get(path) == null)
+        if (configHandler.getConfig().get(path) == null) {
             return new HashSet<>();
+        }
 
         return new HashSet<>(configHandler.getConfig().getStringList(path));
     }
-
 }

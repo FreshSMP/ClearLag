@@ -27,18 +27,12 @@ public class AreaCmd extends CommandModule {
 
     @Override
     protected void run(Player player, String[] args) throws WrongCommandArgumentException {
-
         try {
-
             final int radius = Integer.parseInt(args[0]);
-
             final int removed = entityManager.removeEntities(areaClear.getRemovables(player.getNearbyEntities(radius, radius, radius), player.getWorld()), player.getWorld());
-
             lang.sendMessage("message", player, removed, radius);
-
         } catch (NumberFormatException e) {
             throw new WrongCommandArgumentException(lang.getMessage("error"));
         }
     }
-
 }

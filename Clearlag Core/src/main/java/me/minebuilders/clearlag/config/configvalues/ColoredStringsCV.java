@@ -14,14 +14,11 @@ public class ColoredStringsCV implements ConfigData<String[]> {
 
     @Override
     public String[] getValue(String path) {
-
         final String[] lines = configHandler.getConfig().getString(path).split("/n");
-
         for (int i = 0; i < lines.length; ++i) {
             lines[i] = Util.color(lines[i]);
         }
 
         return lines;
     }
-
 }

@@ -39,19 +39,23 @@ public abstract class CommandModule extends ClearlagModule {
 
     public void processCmd(CommandSender sender, String[] arg) throws WrongCommandArgumentException {
 
-        if (!sender.hasPermission("lagg." + name))
+        if (!sender.hasPermission("lagg." + name)) {
             throw new WrongCommandArgumentException(noPermission, displayName);
+        }
 
-        if (argLength >= arg.length)
+        if (argLength >= arg.length) {
             throw new WrongCommandArgumentException(wrongUsage, usage, displayName);
+        }
 
-        if (arg.length >= 1)
+        if (arg.length >= 1) {
             arg = Arrays.copyOfRange(arg, 1, arg.length);
+        }
 
-        if (sender instanceof Player)
+        if (sender instanceof Player) {
             run((Player) sender, arg);
-        else
+        } else {
             run(sender, arg);
+        }
     }
 
     protected void run(Player player, String[] args) throws WrongCommandArgumentException {
@@ -71,8 +75,9 @@ public abstract class CommandModule extends ClearlagModule {
             displayName = languageManager.getMessage("command." + name + ".name").getRawStringMessage();
             desc = languageManager.getMessage("command." + name + ".desc").getRawStringMessage();
             usage = languageManager.getMessage("command." + name + ".usage").getRawStringMessage();
-        } else
+        } else {
             displayName = name;
+        }
 
         commandListener.addCmd(this);
     }
@@ -96,5 +101,4 @@ public abstract class CommandModule extends ClearlagModule {
     public String getDescription() {
         return desc;
     }
-
 }

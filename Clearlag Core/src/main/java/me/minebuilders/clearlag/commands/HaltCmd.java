@@ -17,19 +17,12 @@ public class HaltCmd extends CommandModule {
 
     @Override
     protected void run(CommandSender sender, String[] args) {
-
         if (!halttask.isEnabled() && (args.length <= 0 || args[0].equalsIgnoreCase("on"))) {
-
             halttask.setEnabled();
-
             lang.sendMessage("halted", sender);
-
         } else if (halttask.isEnabled() && (args.length <= 0 || args[0].equalsIgnoreCase("off"))) {
-
             halttask.setDisabled();
-
             lang.sendMessage("unhalted", sender);
-
         } else {
             wrongUsage.sendMessage(sender, usage, displayName);
         }

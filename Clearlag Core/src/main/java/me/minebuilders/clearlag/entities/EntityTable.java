@@ -17,16 +17,14 @@ public class EntityTable {
     private static final ArrayList<EntityAttribute<Entity>> EMPTY_COLLECTION = new ArrayList<>(1);
 
     public boolean containsEntity(Entity entity) {
-
         List<EntityAttribute<Entity>> con = entityTable[entity.getType().ordinal()];
-
         if (con != null) {
-
             if (!con.isEmpty()) {
-
-                for (EntityAttribute<Entity> e : con)
-                    if (!e.containsData(entity))
+                for (EntityAttribute<Entity> e : con) {
+                    if (!e.containsData(entity)) {
                         return false;
+                    }
+                }
             }
 
             return true;
@@ -34,7 +32,6 @@ public class EntityTable {
 
         return false;
     }
-
 
     public void setEntityAttributes(EntityType type, ArrayList<EntityAttribute<Entity>> entityAttributes) {
         entityTable[type.ordinal()] = entityAttributes;

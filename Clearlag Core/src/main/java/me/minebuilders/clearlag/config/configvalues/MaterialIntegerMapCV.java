@@ -22,22 +22,20 @@ public class MaterialIntegerMapCV implements ConfigData<Map<Material, Integer>> 
         Map<Material, Integer> materialIntegerMap = new HashMap<>();
 
         if (section != null) {
-
             for (String key : section.getKeys(false)) {
-
                 Material material = Material.matchMaterial(key);
-
-                if (material == null)
+                if (material == null) {
                     material = Material.getMaterial(key);
+                }
 
-                if (material != null)
+                if (material != null) {
                     materialIntegerMap.put(material, configHandler.getConfig().getInt(path + "." + key));
-                else {
+                } else {
                     Util.warning("Item type '" + key + "' does not match any Materials found on your Craftbukkit version.");
                 }
             }
         }
+
         return materialIntegerMap;
     }
-
 }

@@ -33,12 +33,13 @@ public class BroadcastHandler extends ClearlagModule {
     public void broadcast(String[] message) {
 
         if (isEnabled()) {
-
-            for (int i = 0; i < message.length; ++i)
+            for (int i = 0; i < message.length; ++i) {
                 message[i] = Util.color(message[i]);
+            }
 
-            if (async && !(broadcaster instanceof AsyncBroadcaster))
+            if (async && !(broadcaster instanceof AsyncBroadcaster)) {
                 broadcaster = new AsyncBroadcaster(broadcaster);
+            }
 
             broadcaster.broadcast(message);
         }
@@ -53,35 +54,30 @@ public class BroadcastHandler extends ClearlagModule {
     }
 
     public interface Broadcaster {
-
         void broadcast(String[] message);
-
     }
 
     private class DefaultBroadcaster implements Broadcaster {
 
         @Override
         public void broadcast(String[] message) {
-
             if (usePermissionForBroadcasts) {
-
-                for (String str : message)
+                for (String str : message) {
                     Bukkit.broadcast(str, permission);
-
-            } else
-
-                for (Player p : Bukkit.getOnlinePlayers()) {
-
-                    for (String str : message)
-                        p.sendMessage(str);
                 }
+            } else {
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    for (String str : message) {
+                        p.sendMessage(str);
+                    }
+                }
+            }
         }
     }
 
     private static class AsyncBroadcaster implements Broadcaster {
 
         private final ExecutorService executor = Executors.newSingleThreadExecutor();
-
         private final Broadcaster wrappedBroadcaster;
 
         public AsyncBroadcaster(Broadcaster wrappedBroadcaster) {

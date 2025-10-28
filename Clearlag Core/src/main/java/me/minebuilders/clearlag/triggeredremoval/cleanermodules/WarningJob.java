@@ -50,17 +50,14 @@ public class WarningJob extends TaskModule {
     public void run() {
 
         final String[] broadcastWarning = warnings.get(++timer);
-
         if (broadcastWarning != null) {
-
-            for (String message : broadcastWarning)
+            for (String message : broadcastWarning) {
                 broadcastHandler.broadcast(message.replace("+remaining", "" + (executeJobTime - timer)));
+            }
         }
 
         if (timer >= executeJobTime) {
-
             super.setDisabled();
-
             wrappedJob.setEnabled();
         }
     }
@@ -72,10 +69,10 @@ public class WarningJob extends TaskModule {
 
     @Override
     public void setDisabled() {
-
-        if (super.isEnabled())
+        if (super.isEnabled()) {
             super.setDisabled();
-        else
+        } else {
             wrappedJob.setDisabled();
+        }
     }
 }

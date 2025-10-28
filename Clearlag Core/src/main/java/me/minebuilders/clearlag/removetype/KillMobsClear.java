@@ -22,5 +22,4 @@ public class KillMobsClear extends ClearModule {
     public boolean isRemovable(Entity e) {
         return e instanceof LivingEntity && !(e instanceof HumanEntity) && (removeNamed || e.getCustomName() == null) && !mobFilter.containsEntity(e);
     }
-
 }

@@ -30,9 +30,7 @@ public class ChunkLimiterListener extends EventModule {
     }
 
     private int countChunks() {
-
         int size = 0;
-
         for (World w : Bukkit.getWorlds()) {
             size += w.getLoadedChunks().length;
         }

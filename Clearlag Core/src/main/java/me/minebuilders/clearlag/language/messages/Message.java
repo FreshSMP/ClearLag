@@ -14,5 +14,4 @@ public interface Message {
     void sendMessage(CommandSender sender, Object... obj);
 
     void broadcastMessage(Object... obj);
-
 }

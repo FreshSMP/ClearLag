@@ -14,11 +14,10 @@ public class AutoClear extends LimitClear {
 
     @Override
     public boolean isRemovable(Entity e) {
-
-        if (removeEntities.containsEntity(e))
+        if (removeEntities.containsEntity(e)) {
             return true;
+        }
 
         return super.isRemovable(e);
     }
-
 }

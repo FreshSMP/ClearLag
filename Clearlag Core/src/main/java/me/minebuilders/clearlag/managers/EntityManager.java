@@ -17,7 +17,6 @@ public class EntityManager extends ClearlagModule {
 
 	public int removeEntities(ClearModule mod) {
 		int removed = 0;
-
 		for (World w : Bukkit.getWorlds()) {
 			removed += removeEntities(mod.getRemovables(w.getEntities(), w), w);
 		}
@@ -29,11 +28,13 @@ public class EntityManager extends ClearlagModule {
 
 		EntityRemoveEvent et = new EntityRemoveEvent(removables, w);
 
-		if (enabled)
-			Bukkit.getPluginManager().callEvent(et);
+		if (enabled) {
+            Bukkit.getPluginManager().callEvent(et);
+        }
 
-		for (Entity en : et.getEntityList())
-			en.remove();
+		for (Entity en : et.getEntityList()) {
+            en.remove();
+        }
 
 		return et.getEntityList().size();
 	}

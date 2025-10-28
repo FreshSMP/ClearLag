@@ -23,7 +23,6 @@ public class TNTMinecartListener extends EventModule {
 
         if (mine instanceof ExplosiveMinecart) {
             int max = 0;
-
             for (Entity tnt : mine.getNearbyEntities(radius, radius, radius)) {
                 if (tnt instanceof ExplosiveMinecart) {
                     max++;

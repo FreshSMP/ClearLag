@@ -46,28 +46,22 @@ public class ProfileCmd extends CommandModule {
 
     @Override
     protected void run(final CommandSender sender, String[] args) throws WrongCommandArgumentException {
-
-        if (!Util.isInteger(args[0]))
+        if (!Util.isInteger(args[0])) {
             throw new WrongCommandArgumentException(lang.getMessage("invalidtime"), args[0]);
+        }
 
         final Callback<Map<ChunkKey, MutableInt>> callback = chunkKeyMutableIntMap -> {
-
             if (chunkKeyMutableIntMap.isEmpty()) {
-
                 lang.sendMessage("nosamples", sender);
 
                 return;
             }
 
             final int size = 10;
-
             final Integer[] sizes = new Integer[size];
             final ChunkKey[] chunks = new ChunkKey[size];
-
             for (Map.Entry<ChunkKey, MutableInt> entry : chunkKeyMutableIntMap.entrySet()) {
-
                 final int amount = entry.getValue().getValue();
-
                 for (int i = 0; i < size; i++) {
 
                     if (sizes[i] == null || sizes[i] < amount) {
@@ -86,75 +80,52 @@ public class ProfileCmd extends CommandModule {
             lang.sendMessage("header", sender);
 
             for (int i = 0; i < sizes.length; i++) {
-
                 ChunkKey c = chunks[i];
-
                 lineMessage.sendMessage(sender, (i + 1), c.getWorld().getName(), c.getX(), c.getZ(), sizes[i]);
             }
         };
 
         ProfileSession profileSession = null;
-
         for (ProfilerFactory factory : profilerFactories) {
-
-            if (factory.getId().equalsIgnoreCase(args[1])) {
+            if (factory.id().equalsIgnoreCase(args[1])) {
                 profileSession = factory.constructProfiler(callback);
                 break;
             }
         }
 
         if (profileSession == null) {
-
             final StringBuilder sb = new StringBuilder();
-
             for (ProfilerFactory factory : profilerFactories) {
-
-                if (sb.length() > 0)
+                if (!sb.isEmpty())
                     sb.append(", ");
-
-                sb.append(factory.getId());
+                sb.append(factory.id());
             }
 
             throw new WrongCommandArgumentException(lang.getMessage("invalidprofiler"), args[1], sb.toString());
         }
 
-        profileSession.runTaskLater(Clearlag.getInstance(), Integer.parseInt(args[0]) * 20L);
-
-        Bukkit.getPluginManager().registerEvents(profileSession, Clearlag.getInstance());
+        profileSession.runTaskLater(ClearLag.getInstance(), Integer.parseInt(args[0]) * 20L);
+        Bukkit.getPluginManager().registerEvents(profileSession, ClearLag.getInstance());
 
         lang.sendMessage("started", sender, args[0]);
     }
 
-    private static class ProfilerFactory {
-
-        private final String id;
-
-        private final Class<? extends ProfileSession> sessionClass;
-
-        public ProfilerFactory(String id, Class<? extends ProfileSession> sessionClass) {
-            this.id = id;
-            this.sessionClass = sessionClass;
-        }
+    private record ProfilerFactory(String id, Class<? extends ProfileSession> sessionClass) {
 
         public ProfileSession constructProfiler(Callback<Map<ChunkKey, MutableInt>> callback) {
-            try {
-                return (ProfileSession) sessionClass.getDeclaredConstructors()[0].newInstance(callback);
-            } catch (Exception e) {
-                e.printStackTrace();
+                try {
+                    return (ProfileSession) sessionClass.getDeclaredConstructors()[0].newInstance(callback);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                return null;
             }
-            return null;
         }
-
-        public String getId() {
-            return id;
-        }
-    }
-
 
     private static abstract class ProfileSession extends BukkitRunnable implements Listener {
 
         final Map<ChunkKey, MutableInt> chunkMap = new HashMap<>();
-
         final Callback<Map<ChunkKey, MutableInt>> callback;
 
         public ProfileSession(Callback<Map<ChunkKey, MutableInt>> callback) {
@@ -163,18 +134,13 @@ public class ProfileCmd extends CommandModule {
 
         @Override
         public void run() {
-
             HandlerList.unregisterAll(this);
-
             callback.call(chunkMap);
         }
 
         protected void incrementMap(Chunk chunk) {
-
             final ChunkKey key = new ChunkKey(chunk);
-
             MutableInt count = chunkMap.get(key);
-
             if (count == null) {
                 count = new MutableInt(1);
                 chunkMap.put(key, count);
@@ -230,5 +196,4 @@ public class ProfileCmd extends CommandModule {
             incrementMap(event.getLocation().getChunk());
         }
     }
-
 }

@@ -17,7 +17,7 @@ public class ItemMergeListener extends EventModule {
     @ConfigValue
     private int radius;
 
-    //Yes yes. Very ugly/outdated code. Ignore this class.. Shouldn't even be used anymore in Spigot
+    //Yes, yes. Very ugly/outdated code. Ignore this class... Shouldn't even be used anymore in Spigot
     @EventHandler
     public void onItemDrop(ItemSpawnEvent event) {
 
@@ -44,5 +44,4 @@ public class ItemMergeListener extends EventModule {
             }
         }
     }
-
 }

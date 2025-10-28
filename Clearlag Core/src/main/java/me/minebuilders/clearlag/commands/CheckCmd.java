@@ -1,6 +1,6 @@
 package me.minebuilders.clearlag.commands;
 
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.RAMUtil;
 import me.minebuilders.clearlag.Util;
 import me.minebuilders.clearlag.annotations.AutoWire;
@@ -16,7 +16,11 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.Hopper;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Creature;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
+import org.bukkit.entity.Monster;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -32,41 +36,28 @@ public class CheckCmd extends CommandModule {
 
     @Override
     protected void run(CommandSender sender, String[] args) throws WrongCommandArgumentException {
-
         final List<World> worlds;
-
         if (args.length > 0) {
-
             worlds = new ArrayList<>(args.length);
-
             for (String arg : args) {
-
                 World world = Bukkit.getWorld(arg);
-
-                if (world == null)
+                if (world == null) {
                     throw new WrongCommandArgumentException(lang.getMessage("invalidworld"), arg);
+                }
 
                 worlds.add(world);
             }
-
         } else {
             worlds = Bukkit.getWorlds();
         }
 
         int removed1 = 0, mobs = 0, animals = 0, chunks = 0, spawners = 0, activehoppers = 0, inactivehoppers = 0, players = 0;
-
         for (World w : worlds) {
-
             for (Chunk c : w.getLoadedChunks()) {
-
                 for (BlockState bt : c.getTileEntities()) {
-
                     if (bt instanceof CreatureSpawner) {
-
                         spawners++;
-
                     } else if (bt instanceof Hopper) {
-
                         if (!isHopperEmpty((Hopper) bt)) {
                             activehoppers++;
                         } else {
@@ -76,11 +67,16 @@ public class CheckCmd extends CommandModule {
                 }
 
                 for (Entity e : c.getEntities()) {
-                    if (e instanceof Monster) mobs++;
-                    else if (e instanceof Player) players++;
-                    else if (e instanceof Creature) animals++;
-                    else if (e instanceof Item) removed1++;
+                    switch (e) {
+                        case Monster monster -> mobs++;
+                        case Player player -> players++;
+                        case Creature creature -> animals++;
+                        case Item item -> removed1++;
+                        default -> {
+                        }
+                    }
                 }
+
                 chunks++;
             }
         }
@@ -96,7 +92,7 @@ public class CheckCmd extends CommandModule {
                 activehoppers,
                 inactivehoppers,
                 spawners,
-                Util.getTime(System.currentTimeMillis() - Clearlag.getInstance().getInitialBootTimestamp()),
+                Util.getTime(System.currentTimeMillis() - ClearLag.getInstance().getInitialBootTimestamp()),
                 tpsTask.getStringTPS(),
                 RAMUtil.getUsedMemory(), RAMUtil.getMaxMemory(),
                 (RAMUtil.getMaxMemory() - RAMUtil.getUsedMemory())
@@ -109,6 +105,7 @@ public class CheckCmd extends CommandModule {
         for (ItemStack it : hop.getInventory().getContents()) {
             if (it != null) return false;
         }
+
         return true;
     }
 }

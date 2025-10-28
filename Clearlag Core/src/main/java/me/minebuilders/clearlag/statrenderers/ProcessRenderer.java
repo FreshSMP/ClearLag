@@ -72,32 +72,23 @@ public class ProcessRenderer extends StatRenderer {
     public void draw(MapView mapView, MapCanvas mapCanvas, Player player) {
 
         int x = 0;
-
         int sleepTime = 0;
-
         int totalTime = 0;
 
         lock.lock();
 
         if (!threadStateColumns.isEmpty()) {
-
             totalTime = threadStateColumns.size() * TICK_LENGTH;
-
             for (StateColumn stateColumn : threadStateColumns) {
-
                 int drawPosition = height - 1;
-
                 for (int i = 0; i < stateColumn.stateTable.length; ++i) {
-
                     final int length = stateColumn.getStateCount(i);
-
                     if (length > 0) {
-
-                        if (i == 4)
+                        if (i == 4) {
                             sleepTime += length;
+                        }
 
                         final byte color = stateColorTable[i];
-
                         for (int j = 0; j < length; ++j) {
                             mapCanvas.setPixel(x, drawPosition - j, color);
                         }
@@ -105,6 +96,7 @@ public class ProcessRenderer extends StatRenderer {
                         drawPosition -= length;
                     }
                 }
+
                 ++x;
             }
         }
@@ -112,15 +104,12 @@ public class ProcessRenderer extends StatRenderer {
         lock.unlock();
 
         final int tickLineY = width - 51;
-
         for (int i = 0; i < width; ++i) {
             mapCanvas.setPixel(i, tickLineY, MapPalette.LIGHT_GRAY);
         }
 
         if (totalTime != 0) {
-
             final double threadUsage = (100.0 - (((double) sleepTime / (double) totalTime) * 100.0));
-
             mapCanvas.drawText(5, 5, MinecraftFont.Font,
                     "§44;Thread-Usage: §16;" + ((int) threadUsage) + "%"
             );
@@ -134,9 +123,7 @@ public class ProcessRenderer extends StatRenderer {
             mapCanvas.drawText(6, 29, MinecraftFont.Font,
                     "§44;Memory: §16;" + RAMUtil.getUsedMemory() + "MB"
             );
-
         }
-
     }
 
     private static class StateColumn {
@@ -165,18 +152,13 @@ public class ProcessRenderer extends StatRenderer {
 
         @Override
         public void run() {
-
             if (currentColumn.length >= TICK_LENGTH) {
-
                 lock.lock();
-
                 try {
-
                     threadStateColumns.addFirst(currentColumn);
-
-                    if (threadStateColumns.size() > width)
+                    if (threadStateColumns.size() > width) {
                         threadStateColumns.removeLast();
-
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {

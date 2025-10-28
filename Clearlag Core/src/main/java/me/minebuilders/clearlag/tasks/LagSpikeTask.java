@@ -1,6 +1,6 @@
 package me.minebuilders.clearlag.tasks;
 
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.Util;
 import me.minebuilders.clearlag.annotations.AutoWire;
 import me.minebuilders.clearlag.annotations.ConfigPath;
@@ -58,93 +58,73 @@ public class LagSpikeTask extends TaskModule {
 
             final int currentTick = tick.get();
 
-            if (currentTick < 400)
+            if (currentTick < 400) {
                 return;
+            }
 
             final long elapsedTime = (System.currentTimeMillis() - tickTimestamp.get());
-
             if (elapsedTime >= minElapsedTime) {
-
                 frozen = true;
-
                 final StackTraceElement[] stackTraceElements = mainThread.getStackTrace();
-
                 if (currentTick != frozenTick) {
-
                     lastGarbageCollectionTimeTotal = tickGarbageCollectorTimeTotal.get();
-
                     frozenTick = currentTick;
 
                     Util.warning("Clearlag has detected a possible lag spike on tick #" + currentTick + " (Tick is currently at " + elapsedTime + " milliseconds)");
-
                     Util.warning("Thread name: " + mainThread.getName() + " Id: " + mainThread.getId());
-
                     Util.warning("Thread state: " + mainThread.getState());
-
                     Util.warning("Thread stack-trace: ");
 
                     if (stackTraceElements.length > 0) {
-
-                        for (StackTraceElement ste : stackTraceElements)
+                        for (StackTraceElement ste : stackTraceElements) {
                             Util.log(" > " + ste);
+                        }
 
                         frozenLine = stackTraceElements[0].toString();
                     }
-
                 } else if (followStack && stackTraceElements.length > 0 && !stackTraceElements[0].toString().equals(frozenLine)) {
-
                     Util.warning("Thread stack-trace (Stack moved): ");
-
-                    for (StackTraceElement ste : stackTraceElements)
+                    for (StackTraceElement ste : stackTraceElements) {
                         Util.log(" > " + ste);
+                    }
 
                     frozenLine = stackTraceElements[0].toString();
                 }
 
                 lastElaspedTime = elapsedTime;
-
             } else if (frozen) {
-
                 frozenLine = null;
-
                 frozen = false;
 
                 Util.warning("Thread '" + mainThread.getName() + "' is no longer stuck on tick #" + frozenTick);
                 Util.warning("Estimated time spent on tick #" + frozenTick + ": " + lastElaspedTime);
                 Util.warning("Garbage collection time during tick: " + (getTotalGCCompleteTime() - lastGarbageCollectionTimeTotal));
             }
-
         }
-
     }
 
     private long getTotalGCCompleteTime() {
-
         long totalGarbageCollections = 0;
 
-        for (GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans())
+        for (GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) {
             totalGarbageCollections += gc.getCollectionTime();
+        }
 
         return totalGarbageCollections;
     }
 
     @Override
     public void run() {
-
         tick.incrementAndGet();
-
         tickTimestamp.set(System.currentTimeMillis());
-
         tickGarbageCollectorTimeTotal.set(getTotalGCCompleteTime());
     }
 
     protected int startTask() {
-
         timer = new Timer(true);
-
         timer.scheduleAtFixedRate(new ThreadWatcherTask(), 50, configHandler.getConfig().getLong("lag-spike-helper.check-interval"));
 
-        return Bukkit.getScheduler().runTaskTimer(Clearlag.getInstance(), this, getInterval(), getInterval()).getTaskId();
+        return Bukkit.getScheduler().runTaskTimer(ClearLag.getInstance(), this, getInterval(), getInterval()).getTaskId();
     }
 
     @Override
@@ -152,9 +132,7 @@ public class LagSpikeTask extends TaskModule {
         super.setDisabled();
 
         Bukkit.getScheduler().cancelTask(taskid);
-
         timer.cancel();
-
         timer = null;
     }
 

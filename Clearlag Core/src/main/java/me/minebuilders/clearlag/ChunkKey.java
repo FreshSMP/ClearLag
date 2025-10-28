@@ -63,5 +63,4 @@ public class ChunkKey {
     public boolean equals(ChunkKey ck) {
         return ck.getZ() == z && ck.getX() == x;
     }
-
 }

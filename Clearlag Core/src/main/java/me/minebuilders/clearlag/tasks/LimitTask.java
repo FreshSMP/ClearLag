@@ -31,13 +31,15 @@ public class LimitTask extends TaskModule {
     private BroadcastHandler broadcastHandler;
 
     public void run() {
-        List<Entity> ents = new ArrayList<Entity>();
+        List<Entity> ents = new ArrayList<>();
 
         for (World w : Bukkit.getWorlds()) {
             ents.addAll(limitClear.getRemovables(w.getEntities(), w));
         }
 
-        if (ents.size() <= max) return;
+        if (ents.size() <= max) {
+            return;
+        }
 
         for (Entity entity : ents) {
             entity.remove();
@@ -54,5 +56,4 @@ public class LimitTask extends TaskModule {
     public int getInterval() {
         return configHandler.getConfig().getInt("limit.check-interval") * 20;
     }
-
 }

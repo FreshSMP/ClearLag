@@ -18,5 +18,4 @@ public abstract class EntityAttribute<T extends Entity> {
     }
 
     public abstract boolean containsData(T entity);
-
 }

@@ -16,5 +16,4 @@ public class AreaClear extends ClearModule {
 	public boolean isRemovable(Entity e) {
 		return (!(e instanceof Player) && !types.containsEntity(e));
 	}
-
 }

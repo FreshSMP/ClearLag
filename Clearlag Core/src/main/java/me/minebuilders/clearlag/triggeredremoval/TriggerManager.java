@@ -1,6 +1,6 @@
 package me.minebuilders.clearlag.triggeredremoval;
 
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.Util;
 import me.minebuilders.clearlag.annotations.AutoWire;
 import me.minebuilders.clearlag.annotations.ConfigPath;
@@ -30,13 +30,11 @@ public class TriggerManager extends ClearlagModule {
     @AutoWire
     private ConfigHandler configHandler;
 
-    private final Map<CleanerTrigger, BukkitTask> tirggerTaskMap = new HashMap<>(2);
+    private final Map<CleanerTrigger, BukkitTask> triggerTaskMap = new HashMap<>(2);
 
     @Override
     public void setEnabled() {
-
         final Configuration config = configHandler.getConfig();
-
         if (config.getConfigurationSection("custom-trigger-removal.triggers") == null) {
             enabled = false;
 
@@ -48,22 +46,17 @@ public class TriggerManager extends ClearlagModule {
         super.setEnabled();
 
         for (String triggerKey : config.getConfigurationSection("custom-trigger-removal.triggers").getKeys(false)) {
-
             final CleanerTrigger trigger;
-
             CleanerHandler cleanerHandler = new CleanerHandler();
-
             final String cleanerType = config.getString("custom-trigger-removal.triggers." + triggerKey + ".trigger-type");
-
             if (cleanerType != null) {
-
                 if (cleanerType.equalsIgnoreCase("tps-trigger")) {
                     trigger = new TPSTrigger(cleanerHandler);
                 } else if (cleanerType.equalsIgnoreCase("entity-limit-trigger")) {
                     trigger = new EntityLimitTrigger(cleanerHandler);
-                } else
+                } else {
                     trigger = null;
-
+                }
             } else {
                 Util.warning("You must specify a trigger-type for trigger " + triggerKey);
                 continue;
@@ -73,10 +66,9 @@ public class TriggerManager extends ClearlagModule {
                 Util.warning("Unknown trigger specified: " + triggerKey);
                 Util.warning("Trigger " + triggerKey + " will be ignored!");
             } else {
-
                 try {
                     configHandler.setObjectConfigValues(trigger, "custom-trigger-removal.triggers." + triggerKey);
-                    Clearlag.getInstance().getAutoWirer().wireObject(trigger);
+                    ClearLag.getInstance().getAutoWirer().wireObject(trigger);
                 } catch (Exception e) {
                     Util.warning("Failed to set config variables for trigger '" + triggerKey + "'");
                     e.printStackTrace();
@@ -84,9 +76,7 @@ public class TriggerManager extends ClearlagModule {
                 }
 
                 for (String cleanerKey : config.getConfigurationSection("custom-trigger-removal.triggers." + triggerKey + ".jobs").getKeys(false)) {
-
                     ClearlagModule module = null;
-
                     if (cleanerKey.equalsIgnoreCase("entity-clearer")) {
                         module = new EntityCleanerJob();
                     } else if (cleanerKey.equalsIgnoreCase("command-executor")) {
@@ -97,10 +87,9 @@ public class TriggerManager extends ClearlagModule {
                         Util.warning("Unknown job specified: " + cleanerKey);
                         Util.warning("Job " + cleanerKey + " will be ignored!");
                     } else {
-
                         try {
                             configHandler.setObjectConfigValues(module, "custom-trigger-removal.triggers." + triggerKey + ".jobs." + cleanerKey);
-                            Clearlag.getInstance().getAutoWirer().wireObject(module);
+                            ClearLag.getInstance().getAutoWirer().wireObject(module);
                         } catch (Exception e) {
                             Util.warning("Failed to set config variables for job '" + cleanerKey + "', and trigger " + triggerKey);
                             e.printStackTrace();
@@ -109,10 +98,9 @@ public class TriggerManager extends ClearlagModule {
 
                         if (config.get("custom-trigger-removal.triggers." + triggerKey + ".jobs." + cleanerKey + ".warnings") != null) {
                             module = new WarningJob(module);
-
                             try {
                                 configHandler.setObjectConfigValues(module, "custom-trigger-removal.triggers." + triggerKey + ".jobs." + cleanerKey);
-                                Clearlag.getInstance().getAutoWirer().wireObject(module);
+                                ClearLag.getInstance().getAutoWirer().wireObject(module);
                             } catch (Exception e) {
                                 Util.warning("Failed to set config variables for warnings on job '" + cleanerKey + "', and trigger " + triggerKey);
                                 e.printStackTrace();
@@ -130,10 +118,9 @@ public class TriggerManager extends ClearlagModule {
                     public void run() {
                         trigger.runTrigger();
                     }
+                }.runTaskTimer(ClearLag.getInstance(), trigger.getCheckFrequency(), trigger.getCheckFrequency());
 
-                }.runTaskTimer(Clearlag.getInstance(), trigger.getCheckFrequency(), trigger.getCheckFrequency());
-
-                tirggerTaskMap.put(trigger, runnableTask);
+                triggerTaskMap.put(trigger, runnableTask);
             }
         }
     }
@@ -142,9 +129,10 @@ public class TriggerManager extends ClearlagModule {
     public void setDisabled() {
         super.setDisabled();
 
-        for (BukkitTask task : tirggerTaskMap.values())
+        for (BukkitTask task : triggerTaskMap.values()) {
             task.cancel();
+        }
 
-        tirggerTaskMap.clear();
+        triggerTaskMap.clear();
     }
 }

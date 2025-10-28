@@ -16,6 +16,7 @@ public class ReflectionUtil {
                 return meth;
             }
         }
+
         return null;
     }
 
@@ -31,7 +32,7 @@ public class ReflectionUtil {
     public static boolean isField(Class owner, String fieldName) {
         try  {
             Field field = owner.getDeclaredField(fieldName);
-            return field != null;
+            return true;
         }  catch (Exception e) {
             return false;
         }
@@ -42,63 +43,57 @@ public class ReflectionUtil {
             if (field == int.class) {
                 return ((Number) value).intValue();
             }
+
             if (field == long.class) {
                 return ((Number) value).longValue();
             }
+
             if (field == float.class) {
                 return ((Number) value).floatValue();
             }
+
             if (field == double.class) {
                 return ((Number) value).doubleValue();
             }
         }
+
         return value;
     }
 
     public static Field getField(Class<?> clazz, String name)  {
-
         try {
             final Field field = clazz.getDeclaredField(name);
-
             field.setAccessible(true);
 
             return field;
-
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
     }
 
     public static MethodHandle generateGetterMethodHandle(Class<?> clazz, String name)  {
-
         try {
             final Field field = clazz.getDeclaredField(name);
-
             field.setAccessible(true);
 
             return MethodHandles.lookup().unreflectGetter(field);
-
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
     }
 
     public static MethodHandle generateSetterMethodHandle(Class<?> clazz, String name)  {
-
         try {
             final Field field = clazz.getDeclaredField(name);
-
             field.setAccessible(true);
 
             return MethodHandles.lookup().unreflectSetter(field);
-
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
     }
 
     public static Class<?> getClass(String package_, String clazz) {
-
         try {
             return Class.forName(package_ + "." + clazz);
         } catch (Exception e) {

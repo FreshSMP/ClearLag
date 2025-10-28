@@ -23,14 +23,10 @@ public abstract class CleanerTrigger implements Trigger {
     public boolean runTrigger() {
 
         if (!triggered) {
-
             if (shouldTrigger()) {
-
                 triggered = true;
-
                 cleanerHandler.startJobs();
             }
-
         } else if (isRecovered()) {
             triggered = false;
         }

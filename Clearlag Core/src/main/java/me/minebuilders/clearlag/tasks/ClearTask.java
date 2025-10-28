@@ -43,17 +43,16 @@ public class ClearTask extends TaskModule {
 
         final String[] broadcastWarning = warnings.get(++interval);
 
-        if (broadcastWarning != null)
+        if (broadcastWarning != null) {
             broadcastHandler.broadcast(Util.cloneAndReplaceStringArr(broadcastWarning, "+remaining", "" + (autoremovalInterval - interval)));
-
+        }
 
         if (interval >= autoremovalInterval) {
-
-            if (broadcastRemoval)
+            if (broadcastRemoval) {
                 broadcastHandler.broadcast(Util.cloneAndReplaceStringArr(broadcastMessage, "+RemoveAmount", String.valueOf(entityManager.removeEntities(autoClear))));
+            }
 
             interval = 0;
         }
     }
-
 }

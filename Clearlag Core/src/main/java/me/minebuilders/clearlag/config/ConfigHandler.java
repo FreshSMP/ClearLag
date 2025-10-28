@@ -1,6 +1,6 @@
 package me.minebuilders.clearlag.config;
 
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.Util;
 import me.minebuilders.clearlag.annotations.ConfigModule;
 import me.minebuilders.clearlag.annotations.ConfigPath;
@@ -18,7 +18,6 @@ import java.io.FileInputStream;
 import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Filter;
-import java.util.logging.LogRecord;
 
 public class ConfigHandler {
 
@@ -32,67 +31,47 @@ public class ConfigHandler {
 
     public ConfigHandler() {
 
-        final Filter currentFilter = Clearlag.getInstance().getLogger().getFilter();
-
+        final Filter currentFilter = ClearLag.getInstance().getLogger().getFilter();
         final AtomicBoolean configLoadFailed = new AtomicBoolean(false);
 
         try {
 
-            //Ridicious..
-            Clearlag.getInstance().getServer().getLogger().setFilter(new Filter() {
-
-                @Override
-                public boolean isLoggable(LogRecord record) {
-
-                    if (record.getMessage().contains("ClearLag"))
-                        configLoadFailed.set(true);
-
-                    return true;
+            ClearLag.getInstance().getServer().getLogger().setFilter(record -> {
+                if (record.getMessage().contains("ClearLag")) {
+                    configLoadFailed.set(true);
                 }
+
+                return true;
             });
 
-            config = Clearlag.getInstance().getConfig();
+            config = ClearLag.getInstance().getConfig();
 
             if (configLoadFailed.get()) {
-
                 Util.warning("Clearlag failed to load to your config. Clearlag will now attempt to repair your config by force-updating it...");
-
                 try {
-
                     updateConfig();
-
-                    Clearlag.getInstance().reloadConfig();
-
-                    config = Clearlag.getInstance().getConfig();
-
+                    ClearLag.getInstance().reloadConfig();
+                    config = ClearLag.getInstance().getConfig();
                 } catch (Exception e) {
                     Util.warning("Clearlag failed to force-update your config. Using the default config - please repair your configuration using https://yaml-online-parser.appspot.com/");
                     throw e;
                 }
             }
 
-            Clearlag.getInstance().getServer().getLogger().setFilter(currentFilter);
-
+            ClearLag.getInstance().getServer().getLogger().setFilter(currentFilter);
         } catch (Exception e) {
-            config = Clearlag.getInstance().getConfig();
+            config = ClearLag.getInstance().getConfig();
         }
 
-        if (!new File(Clearlag.getInstance().getDataFolder(), "config.yml").exists()) {
+        if (!new File(ClearLag.getInstance().getDataFolder(), "config.yml").exists()) {
             Util.log("Config not found. Generating default config...");
-            Clearlag.getInstance().saveDefaultConfig();
-
+            ClearLag.getInstance().saveDefaultConfig();
         } else if (!isConfigUpdated()) {
-
             boolean resetConfig = false;
-
             if (config.getBoolean("config-updater.force-update") && !isConfigUpdated()) {
-
                 resetConfig("Old-Config.yml");
-
                 resetConfig = true;
-
             } else if (!isConfigUpdated()) {
-
                 try {
                     updateConfig();
                 } catch (Exception e) {
@@ -108,7 +87,6 @@ public class ConfigHandler {
             }
 
             WarnTask warnTask = new WarnTask(resetConfig);
-
             warnTask.setEnabled();
         }
 
@@ -124,9 +102,7 @@ public class ConfigHandler {
     }
 
     public String javaToConfigValue(String str) {
-
         StringBuilder sb = new StringBuilder();
-
         for (char c : str.toCharArray()) {
             if (Character.isUpperCase(c)) {
                 sb.append("-");
@@ -140,9 +116,7 @@ public class ConfigHandler {
     }
 
     public void setModuleConfigValues() throws Exception {
-
-        for (Module module : Clearlag.getModules()) {
-
+        for (Module module : ClearLag.getModules()) {
             if (module.isEnabled()) {
                 setObjectConfigValues(module);
             }
@@ -150,9 +124,7 @@ public class ConfigHandler {
     }
 
     public void setObjectConfigValues(Object object) throws Exception {
-
         String path = null;
-
         final ConfigPath configPath = object.getClass().getAnnotation(ConfigPath.class);
 
         if (configPath != null) {
@@ -162,39 +134,29 @@ public class ConfigHandler {
         setObjectConfigValues(object, path);
     }
 
-    public void setObjectConfigValues(Object object, String path) throws Exception {//Todo: Apply config setting to objects too
-
+    public void setObjectConfigValues(Object object, String path) throws Exception {
         Class<?> clazz = object.getClass();
-
         while (clazz != null && clazz != Object.class && clazz != Module.class) {
-
             for (Field field : clazz.getDeclaredFields()) {
-
                 final ConfigValue configValue = field.getAnnotation(ConfigValue.class);
                 final ConfigModule configModule = field.getAnnotation(ConfigModule.class);
-
                 if (configValue != null) {
-
                     field.setAccessible(true);
-
                     ConfigData cd = configValue.valueType().getConfigData();
-
                     Object ob = cd.getValue(configValue.path().length() <= 1 ? path + "." + fieldToConfigValue(field) : configValue.path());
-
                     if (ob == null) {
                         Object tp = field.get(object);
 
-                        if (tp != null)
+                        if (tp != null) {
                             ob = tp.getClass().newInstance();
+                        }
                     }
 
                     field.set(object, (cd instanceof PrimitiveCV ? ReflectionUtil.castPrimitedValues(field.getType(), ob) : ob));
-
                 }
 
                 if (configModule != null) {
                     field.setAccessible(true);
-
                     setObjectConfigValues(field.get(object));
                 }
             }
@@ -209,53 +171,53 @@ public class ConfigHandler {
                 return true;
             }
         }
+
         return false;
     }
 
     private void resetConfig(String renamedName) {
         renameCurrentConfig(renamedName);
 
-        Clearlag.getInstance().saveDefaultConfig();
-
-        Clearlag.getInstance().reloadConfig();
+        ClearLag.getInstance().saveDefaultConfig();
+        ClearLag.getInstance().reloadConfig();
     }
 
     public void reloadConfig() {
-        Clearlag.getInstance().reloadConfig();
-        config = Clearlag.getInstance().getConfig();
+        ClearLag.getInstance().reloadConfig();
+        config = ClearLag.getInstance().getConfig();
     }
 
     private void renameCurrentConfig(String newName) {
 
-        final File newf = new File(Clearlag.getInstance().getDataFolder().getAbsolutePath(), "config.yml");
-        final File oldf = new File(Clearlag.getInstance().getDataFolder().getAbsolutePath(), newName);
+        final File newf = new File(ClearLag.getInstance().getDataFolder().getAbsolutePath(), "config.yml");
+        final File oldf = new File(ClearLag.getInstance().getDataFolder().getAbsolutePath(), newName);
 
-        if (oldf.isFile())
+        if (oldf.isFile()) {
             oldf.delete();
+        }
 
-        if (newf.isFile())
-            newf.renameTo(new File(Clearlag.getInstance().getDataFolder().getAbsolutePath(), newName));
+        if (newf.isFile()) {
+            newf.renameTo(new File(ClearLag.getInstance().getDataFolder().getAbsolutePath(), newName));
+        }
     }
 
     private void updateConfig() throws Exception {
-        Util.log("Updating config to v" + Clearlag.getInstance().getDescription().getVersion() + "...");
+        Util.log("Updating config to v" + ClearLag.getInstance().getDescription().getVersion() + "...");
 
-        final File file = new File(Clearlag.getInstance().getDataFolder() + "/config.yml");
-
+        final File file = new File(ClearLag.getInstance().getDataFolder() + "/config.yml");
         final ConfigUpdater configUpdater = new ConfigUpdater();
 
         configUpdater.addCarriedOverPath("custom-trigger-removal");
         configUpdater.addCarriedOverPath("item-spawn-age-setter");
-
         configUpdater.addNonMergableKey("config-version");
 
-        configUpdater.setUpdatingToConfig(Clearlag.getInstance().getResource("config.yml"));
-        configUpdater.setUpdatingFromConfig(new FileInputStream(Clearlag.getInstance().getDataFolder() + "/config.yml"));
+        configUpdater.setUpdatingToConfig(ClearLag.getInstance().getResource("config.yml"));
+        configUpdater.setUpdatingFromConfig(new FileInputStream(ClearLag.getInstance().getDataFolder() + "/config.yml"));
 
         renameCurrentConfig("before-update-config.yml");
 
         configUpdater.updateConfig(file);
 
-        Util.log("Successfully updated config to v" + Clearlag.getInstance().getDescription().getVersion() + "!");
+        Util.log("Successfully updated config to v" + ClearLag.getInstance().getDescription().getVersion() + "!");
     }
 }

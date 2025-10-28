@@ -17,21 +17,18 @@ public class ChunkOverloadListener extends EventModule {
     @ConfigValue
     private double flyMaxSpeed;
 
-
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
 
         if (!event.getPlayer().isInsideVehicle()) {
-
             final Location to = event.getTo();
             final Location from = event.getFrom();
-
             if (to.getBlockX() != from.getBlockX() || to.getBlockZ() != from.getBlockZ()) {
-
                 double distance = Math.hypot(from.getX() - to.getX(), from.getZ() - to.getZ());
 
-                if (distance > (event.getPlayer().isFlying() ? flyMaxSpeed : moveMaxSpeed))
+                if (distance > (event.getPlayer().isFlying() ? flyMaxSpeed : moveMaxSpeed)) {
                     event.setTo(from);
+                }
             }
         }
     }

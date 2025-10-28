@@ -1,6 +1,6 @@
 package me.minebuilders.clearlag.tasks;
 
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.Util;
 import me.minebuilders.clearlag.annotations.AutoWire;
 import me.minebuilders.clearlag.annotations.ConfigPath;
@@ -38,26 +38,21 @@ public class TPSTask extends TaskModule {
     protected int startTask() {
 
         elapsedTicks = 0;
-
         if (configHandler.getConfig().getBoolean("settings.use-internal-tps")) {
-
             try {
-
                 tpsCalculator = new InternalTPSYoinker();
-
             } catch (Exception e) {
-
                 Util.warning("Clearlag failed to use the internal TPS tracker during initialization. Reverted to estimation... (" + e.getMessage() + ")");
 
                 tpsCalculator = new EstimatedTPSCalculator();
             }
 
+
         } else {
             tpsCalculator = new EstimatedTPSCalculator();
         }
 
-
-        return Bukkit.getScheduler().scheduleSyncRepeatingTask(Clearlag.getInstance(), this, 120L, getInterval());
+        return Bukkit.getScheduler().scheduleSyncRepeatingTask(ClearLag.getInstance(), this, 120L, getInterval());
     }
 
     public double getTPS() {
@@ -85,21 +80,13 @@ public class TPSTask extends TaskModule {
 
     @Override
     public void run() {
-
         tpsCalculator.tick();
-
         if (elapsedTicks % 20 == 0) {
-
             double tps = tpsCalculator.calculateCurrentAverageTPS();
-
             if (tps > 0 && tps <= 21.0) {
-
                 tpsHistory[index++] = tps;
-
                 if (index >= tpsHistory.length) {
-
                     index = 0;
-
                     Bukkit.getPluginManager().callEvent(new TPSUpdateEvent(getTPS()));
                 }
             }
@@ -112,11 +99,8 @@ public class TPSTask extends TaskModule {
     }
 
     private interface TPSCalculator {
-
         double calculateCurrentAverageTPS();
-
         void tick();
-
     }
 
     private class EstimatedTPSCalculator implements TPSCalculator {
@@ -133,27 +117,22 @@ public class TPSTask extends TaskModule {
 
         @Override
         public void tick() {
-
             final long currentTime = System.currentTimeMillis();
-
             if (lasTimestamp != -1) {
-
                 int elaspedTime = (int) (currentTime - lasTimestamp);
-
-                if (elaspedTime == 49 || elaspedTime == 51)
+                if (elaspedTime == 49 || elaspedTime == 51) {
                     elaspedTime = 50;
+                }
 
                 tickLengths[elapsedTicks % 20] = elaspedTime;
             }
 
             lasTimestamp = currentTime;
-
             if (++elapsedTicks % 20 == 0) {
-
                 double tickSum = 0.0;
-
-                for (int tickLength : tickLengths)
+                for (int tickLength : tickLengths) {
                     tickSum += tickLength;
+                }
 
                 final double tickLength = (tickSum / 20.0);
 
@@ -176,7 +155,6 @@ public class TPSTask extends TaskModule {
         private double tps = 20.0;
 
         public InternalTPSYoinker() throws Exception {
-
             Class<?> minecraftServerClazz = Class.forName("net.minecraft.server." + Util.getRawBukkitVersion() + ".MinecraftServer");
 
             minecraftServerInstance = minecraftServerClazz.getDeclaredMethod("getServer").invoke(null);
@@ -184,17 +162,14 @@ public class TPSTask extends TaskModule {
             recentTpsField = minecraftServerClazz.getDeclaredField("recentTps");
 
             recentTpsField.setAccessible(true);
-
         }
 
         @Override
         public void tick() {
-
             if (++elapsedTicks % 60 == 0) {
                 try {
                     tps = ((double[]) recentTpsField.get(minecraftServerInstance))[0];
                 } catch (IllegalAccessException e) {
-
                     Util.warning("Clearlag failed to use the internal TPS tracker during runtime. Reverted to estimation... (" + e.getMessage() + ")");
 
                     tpsCalculator = new EstimatedTPSCalculator();

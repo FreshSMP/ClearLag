@@ -23,5 +23,4 @@ public class DispenceLimitEvent extends EventModule {
             e.setCancelled(true);
         }
     }
-
 }

@@ -8,6 +8,7 @@ import me.minebuilders.clearlag.modules.CommandModule;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,25 +18,20 @@ public class CommandListener implements CommandExecutor {
     @LanguageValue(key = "command.lagg.")
     private MessageTree lang;
 
-    private final List<CommandModule> cmds = new ArrayList<CommandModule>();
+    private final List<CommandModule> cmds = new ArrayList<>();
 
     public CommandListener() {
-        Clearlag.getInstance().getCommand("lagg").setExecutor(this);
+        ClearLag.getInstance().getCommand("lagg").setExecutor(this);
     }
 
-
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
         final CommandModule enteredSubCommand = (args.length > 0 ? getCmd(args[0]) : null);
 
         if (enteredSubCommand == null) {
-
             final List<CommandModule> cmds = getUserCmds(sender);
-
-            if (cmds.size() == 0) {
-
+            if (cmds.isEmpty()) {
                 lang.sendMessage("nopermission", sender);
-
                 return false;
             }
 
@@ -43,13 +39,12 @@ public class CommandListener implements CommandExecutor {
 
             lang.sendMessage("header", sender);
 
-            for (CommandModule cmd : cmds)
+            for (CommandModule cmd : cmds) {
                 helpLineMessage.sendMessage(sender, cmd.getDisplayName(), cmd.getDescription());
+            }
 
             lang.sendMessage("footer", sender);
-
         } else {
-
             try {
                 enteredSubCommand.processCmd(sender, args);
             } catch (IllegalArgumentException e) {
@@ -62,16 +57,13 @@ public class CommandListener implements CommandExecutor {
         return true;
     }
 
-
     public void addCmd(CommandModule cmd) {
         cmds.add(cmd);
     }
 
     private CommandModule getCmd(String s) {
         s = s.toLowerCase();
-
         for (CommandModule cmd : cmds) {
-
             if (cmd != null && cmd.getDisplayName().equals(s)) {
                 return cmd;
             }
@@ -81,11 +73,8 @@ public class CommandListener implements CommandExecutor {
     }
 
     private List<CommandModule> getUserCmds(CommandSender p) {
-
-        List<CommandModule> mod = new ArrayList<CommandModule>();
-
+        List<CommandModule> mod = new ArrayList<>();
         for (CommandModule cmd : cmds) {
-
             if (p.hasPermission("lagg." + cmd.getName())) {
                 mod.add(cmd);
             }
@@ -93,5 +82,4 @@ public class CommandListener implements CommandExecutor {
 
         return mod;
     }
-
 }

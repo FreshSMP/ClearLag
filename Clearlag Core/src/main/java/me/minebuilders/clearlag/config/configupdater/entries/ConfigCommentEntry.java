@@ -6,13 +6,7 @@ import java.io.IOException;
 /**
  * @author bob7l
  */
-public class ConfigCommentEntry implements ConfigEntry {
-
-    private final String comment;
-
-    public ConfigCommentEntry(String comment) {
-        this.comment = comment;
-    }
+public record ConfigCommentEntry(String comment) implements ConfigEntry {
 
     @Override
     public Object getValue() {
@@ -30,9 +24,7 @@ public class ConfigCommentEntry implements ConfigEntry {
 
     @Override
     public void write(BufferedWriter writer, int tabs) throws IOException {
-
         writer.write(comment);
-
         writer.newLine();
     }
 }

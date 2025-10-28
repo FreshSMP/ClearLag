@@ -47,50 +47,43 @@ public class AttributeParser {
                     name.append(" ").append(tok);
                 }
 
-                if (tok.startsWith("name=\""))
+                if (tok.startsWith("name=\"")) {
                     attribute = new EntityNameAttribute(name.toString());
-                else
+                } else {
                     attribute = new EntityHasMetaAttribute(name.toString());
-
-            } else if (tok.startsWith("hasName"))
+                }
+            } else if (tok.startsWith("hasName")) {
                 attribute = new EntityHasNameAttribute();
-            else if (tok.startsWith("liveTime="))
+            } else if (tok.startsWith("liveTime=")) {
                 attribute = new EntityLifeLimitAttribute(Integer.parseInt(tok.substring(9)));
-            else if (tok.startsWith("isMounted"))
+            } else if (tok.startsWith("isMounted")) {
                 attribute = new EntityMountedAttribute();
-            else if (tok.startsWith("onGround"))
+            } else if (tok.startsWith("onGround")) {
                 attribute = new EntityOnGroundAttribute();
-            else if (tok.startsWith("id=") || tok.startsWith("material=")) {
-
-                if (t == EntityType.DROPPED_ITEM) {
-
+            } else if (tok.startsWith("id=") || tok.startsWith("material=")) {
+                if (t == EntityType.ITEM) {
                     String input = tok.substring(3);
                     Material mat = null;
-
                     if (Util.isInteger(input)) {
-
                         int id = Integer.parseInt(input);
-
                         Util.warning("ID's are no longer usable in your Spigot version - Please change \"" + id + "\" into the item/block's name");
-
                     } else {
                         mat = Material.getMaterial(input);
-
-                        if (mat == null)
+                        if (mat == null) {
                             mat = Material.matchMaterial(input);
+                        }
                     }
 
-
                     attribute = new EntityMaterialAttribute(mat);
-
                 }
             }
 
             if (attribute != null) {
                 attribute.setReversed(reversed);
                 result.attributes.add(attribute);
-            } else
+            } else {
                 result.nonApplicables.add(tok);
+            }
         }
 
         return result;

@@ -17,6 +17,4 @@ public class EntityLifeLimitAttribute extends EntityAttribute<Entity> {
     public boolean containsData(Entity entity) {
         return (!reversed == (entity.getTicksLived() >= lifeLimit));
     }
-
-
 }

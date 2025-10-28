@@ -15,5 +15,4 @@ public class PrimitiveCV implements ConfigData<Object> {
     public Object getValue(String path) {
         return configHandler.getConfig().get(path);
     }
-
 }

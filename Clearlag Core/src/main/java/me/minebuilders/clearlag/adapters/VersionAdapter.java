@@ -16,5 +16,4 @@ public interface VersionAdapter {
     boolean isMapItemStackEqual(ItemStack itemStack, ItemStack itemStack2);
 
     void setItemEntityAge(Item item, int ticks);
-
 }

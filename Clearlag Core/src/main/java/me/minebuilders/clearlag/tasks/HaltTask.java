@@ -1,6 +1,6 @@
 package me.minebuilders.clearlag.tasks;
 
-import me.minebuilders.clearlag.Clearlag;
+import me.minebuilders.clearlag.ClearLag;
 import me.minebuilders.clearlag.annotations.AutoWire;
 import me.minebuilders.clearlag.annotations.ConfigPath;
 import me.minebuilders.clearlag.annotations.ConfigValue;
@@ -44,11 +44,8 @@ public class HaltTask extends ClearlagModule implements Listener {
         valuelist = new HashMap<>(Bukkit.getWorlds().size());
 
         for (World w : Bukkit.getWorlds()) {
-
             if (removeEntities) {
-
                 entityManager.removeEntities(new ClearModule() {
-
                     @Override
                     public boolean isRemovable(Entity e) {
                         return (((e instanceof Item)) || ((e instanceof TNTPrimed)) || ((e instanceof ExperienceOrb)) || ((e instanceof FallingBlock)) || ((e instanceof Monster)));
@@ -58,7 +55,6 @@ public class HaltTask extends ClearlagModule implements Listener {
                     public boolean isWorldEnabled(World w) {
                         return true;
                     }
-
                 });
             }
 
@@ -83,46 +79,34 @@ public class HaltTask extends ClearlagModule implements Listener {
             }
         }
 
-        PluginManager pm = Clearlag.getInstance().getServer().getPluginManager();
+        PluginManager pm = ClearLag.getInstance().getServer().getPluginManager();
 
         Method[] methods = this.getClass().getDeclaredMethods();
 
         for (final Method method : methods) {
-
             final EventHandler he = method.getAnnotation(EventHandler.class);
-
             if (he != null && config.getConfig().getBoolean("halt-command.halted." + config.javaToConfigValue(method.getName()))) {
-
                 Class<?>[] params = method.getParameterTypes();
-
                 if (!Event.class.isAssignableFrom(params[0]) || params.length != 1) {
                     continue;
                 }
 
                 final Class<? extends Event> eventClass = params[0].asSubclass(Event.class);
-
                 method.setAccessible(true);
 
-                EventExecutor executor = new EventExecutor() {
-
-                    public void execute(Listener listener, Event event) throws EventException {
-
-                        try {
-
-                            if (!eventClass.isAssignableFrom(event.getClass())) {
-                                return;
-                            }
-
-                            method.invoke(listener, event);
-
-                        } catch (Exception ex) {
-                            throw new EventException(ex.getCause());
+                EventExecutor executor = (listener, event) -> {
+                    try {
+                        if (!eventClass.isAssignableFrom(event.getClass())) {
+                            return;
                         }
+
+                        method.invoke(listener, event);
+                    } catch (Exception ex) {
+                        throw new EventException(ex.getCause());
                     }
                 };
 
-
-                pm.registerEvent(eventClass, this, he.priority(), executor, Clearlag.getInstance(), he.ignoreCancelled());
+                pm.registerEvent(eventClass, this, he.priority(), executor, ClearLag.getInstance(), he.ignoreCancelled());
             }
         }
     }
@@ -132,7 +116,6 @@ public class HaltTask extends ClearlagModule implements Listener {
         super.setDisabled();
 
         if (!valuelist.isEmpty()) {
-
             for (World w : valuelist.keySet()) {
                 Integer[] values = valuelist.get(w);
                 w.setAmbientSpawnLimit(values[0]);
@@ -145,7 +128,6 @@ public class HaltTask extends ClearlagModule implements Listener {
         }
 
         valuelist = null;
-
         HandlerList.unregisterAll(this);
     }
 
@@ -189,5 +171,4 @@ public class HaltTask extends ClearlagModule implements Listener {
     public void blockNaturalChange(BlockFromToEvent e) {
         e.setCancelled(true);
     }
-
 }

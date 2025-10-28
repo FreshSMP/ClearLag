@@ -15,29 +15,9 @@ public class FireSpreadListener extends EventModule {
     @ConfigValue
     private int time;
 
-//    //Remove me
-//    @EventHandler
-//    public void onMap(MapInitializeEvent event) {
-//
-//        System.out.println("YEEES!!");
-//
-//        event.getMap().setScale(MapView.Scale.NORMAL);
-//
-//        final List<MapRenderer> list = new ArrayList<>(event.getMap().getRenderers());
-//
-//        for (MapRenderer mapRenderer : list)
-//            event.getMap().removeRenderer(mapRenderer);
-//
-//        event.getMap().getRenderers().clear();
-//
-//        event.getMap().addRenderer(memoryRenderer);
-//
-//    }
     @EventHandler
     public void fireSpread(BlockIgniteEvent event) {
-
         if (event.getCause() == IgniteCause.SPREAD) {
-
             if (System.currentTimeMillis() > nextAllowedSpread) {
                 nextAllowedSpread = (System.currentTimeMillis() + time);
             } else {
@@ -45,5 +25,4 @@ public class FireSpreadListener extends EventModule {
             }
         }
     }
-
 }

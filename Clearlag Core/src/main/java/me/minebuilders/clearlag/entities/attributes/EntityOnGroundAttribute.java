@@ -11,5 +11,4 @@ public class EntityOnGroundAttribute extends EntityAttribute<Entity> {
     public boolean containsData(Entity entity) {
         return (!reversed == (entity.isOnGround()));
     }
-
 }

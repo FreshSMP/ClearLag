@@ -20,21 +20,13 @@ public class EntityBreedListener extends EventModule {
 
 	@EventHandler
 	public void onCreatureSpawn(CreatureSpawnEvent event) {
-
 		if (event.getSpawnReason() == SpawnReason.EGG || event.getSpawnReason() == SpawnReason.BREEDING) {
-
 			final Entity eventEntity = event.getEntity();
-
 			int count = 0;
-
 			for (Entity entity : eventEntity.getNearbyEntities(checkRadius, checkRadius, checkRadius)) {
-
 				if (entity instanceof Ageable) {
-
 					if (++count >= maxMobs) {
-
 						event.setCancelled(true);
-
 						return;
 					}
 				}

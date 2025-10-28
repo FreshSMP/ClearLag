@@ -42,7 +42,6 @@ public class EntityAISpawnListener extends EventModule {
 
     @Override
     public void setEnabled() {
-
         try {
             String version = Util.getRawBukkitVersion();
 
@@ -73,17 +72,14 @@ public class EntityAISpawnListener extends EventModule {
             }
 
             super.setEnabled();
-
         } catch (Exception e) {
             Util.warning("Failed to initialize 'mob-range' controller ~ This is possibly caused by an unsupported Bukkit/Spigot server version");
             return;
         }
 
         Configuration config = configHandler.getConfig();
-
         for (String s : config.getConfigurationSection("mob-range").getKeys(false)) {
             EntityType type = Util.getEntityTypeFromString(s);
-
             if (type != null) {
                 mobRanges.put(type, config.getDouble("mob-range." + s));
             }
@@ -92,7 +88,6 @@ public class EntityAISpawnListener extends EventModule {
 
     private void setEntityRange(Entity e) throws Exception {
         Double value = mobRanges.get(e.getType());
-
         if (value != null) {
             setAttriMethod.invoke(
                     getAttriInstanceMethod.invoke(getHandleMethod.invoke(e), followRangeConst),

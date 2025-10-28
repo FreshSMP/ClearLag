@@ -6,5 +6,4 @@ package me.minebuilders.clearlag.config.configvalues;
 public interface ConfigData<T> {
 
     T getValue(String path);
-
 }

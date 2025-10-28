@@ -24,7 +24,6 @@ public class RAMCheckTask extends TaskModule {
     private ConfigHandler configHandler;
 
     public void run() {
-
         if (RAMUtil.getUsedMemory() > ramLimit) {
             try {
                 for (String s : commands)
@@ -39,5 +38,4 @@ public class RAMCheckTask extends TaskModule {
     public int getInterval() {
         return configHandler.getConfig().getInt("ram-meter.interval") * 20;
     }
-
 }

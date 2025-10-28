@@ -30,30 +30,27 @@ public class PerformanceCmd extends CommandModule {
     @Override
     protected void run(Player p, String[] args) throws WrongCommandArgumentException {
 
-        if (p.getInventory().getItemInHand() != null && p.getInventory().getItemInHand().getType() != Material.AIR)
+        if (p.getInventory().getItemInHand().getType() != Material.AIR) {
             p.getWorld().dropItem(p.getLocation(), p.getItemInHand());
+        }
 
         int sampleRate = 1;
-
         if (args.length > 0) {
-
-            if (!Util.isInteger(args[0]))
+            if (!Util.isInteger(args[0])) {
                 throw new WrongCommandArgumentException(lang.getMessage("invalidinteger"), args[0]);
+            }
 
             sampleRate = Math.max(1, Integer.parseInt(args[0]));
         }
 
         final MapView view = Bukkit.createMap(p.getWorld());
-
         view.setScale(MapView.Scale.NORMAL);
-
-        for (MapRenderer renderer : view.getRenderers())
+        for (MapRenderer renderer : view.getRenderers()) {
             view.removeRenderer(renderer);
+        }
 
         final ItemStack mapItemStack = versionAdapter.createMapItemStack(view);
-
         view.addRenderer(new ProcessRenderer(p, sampleRate, mapItemStack, versionAdapter, view, Thread.currentThread()));
-
         p.setItemInHand(mapItemStack);
 
         lang.getMessage("message").sendMessage(p);
