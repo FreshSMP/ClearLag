@@ -9,7 +9,8 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>main</artifactId>
+    <artifactId>ClearLag</artifactId>
+    <version>4.0.0</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -51,7 +52,7 @@
     </dependencies>
 
     <build>
-        <finalName>${project.name}</finalName>
+        <finalName>${project.artifactId}-${project.version}</finalName>
         <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
         <defaultGoal>clean install</defaultGoal>
 
