@@ -108,9 +108,5 @@ public class TickSamplerCmd extends CommandModule {
                 }
             }, 1L, 1L);
         }
-
-        @Override
-        public void run() {
-        }
     }
 }

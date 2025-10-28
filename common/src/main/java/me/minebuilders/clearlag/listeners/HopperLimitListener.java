@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @ConfigPath(path = "hopper-limiter")
-public class HopperLimitListener extends EventModule implements Runnable {
+public class HopperLimitListener extends EventModule {
 
     @ConfigValue
     private final int transferLimit = 6;
@@ -22,52 +22,44 @@ public class HopperLimitListener extends EventModule implements Runnable {
     @ConfigValue
     private final int checkInterval = 1;
 
-    private final AtomicBoolean cancelled = new AtomicBoolean(false);
-
-    // Concurrent + atomic counters per chunk
-    private ConcurrentHashMap<ChunkKey, AtomicInteger> hopperDataMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<ChunkKey, AtomicInteger> hopperDataMap = new ConcurrentHashMap<>();
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
     @EventHandler
     public void onHopper(InventoryMoveItemEvent event) {
         if (event.getSource().getHolder() instanceof Hopper hopper) {
-            final ChunkKey chunkKey = new ChunkKey(hopper.getChunk());
-            final AtomicInteger transfers = hopperDataMap.computeIfAbsent(chunkKey, k -> new AtomicInteger(0));
-
-            if (transfers.get() >= transferLimit) {
+            final ChunkKey key = new ChunkKey(hopper.getChunk());
+            final AtomicInteger count = hopperDataMap.computeIfAbsent(key, k -> new AtomicInteger());
+            if (count.incrementAndGet() > transferLimit) {
                 event.setCancelled(true);
-            } else {
-                transfers.incrementAndGet();
             }
         }
     }
 
-    @Override
-    public void run() {
+    private void resetCounters() {
         hopperDataMap.entrySet().removeIf(e -> e.getValue().get() == 0);
-        hopperDataMap.forEach((k, v) -> v.set(0));
+        hopperDataMap.replaceAll((k, v) -> new AtomicInteger());
     }
 
     @Override
     public void setEnabled() {
         super.setEnabled();
+        running.set(true);
 
-        cancelled.set(false);
-
-        final long ticks = Math.max(1L, checkInterval * 20L);
         ClearLag.scheduler().runTimer(task -> {
-            if (cancelled.get()) {
+            if (!running.get()) {
                 task.cancel();
                 return;
             }
 
-            this.run();
-        }, ticks, ticks);
+            resetCounters();
+        }, checkInterval * 20L, checkInterval * 20L);
     }
 
     @Override
     public void setDisabled() {
         super.setDisabled();
-        cancelled.set(true);
-        hopperDataMap = new ConcurrentHashMap<>();
+        running.set(false);
+        hopperDataMap.clear();
     }
 }

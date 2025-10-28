@@ -14,7 +14,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @ConfigPath(path = "spawn-limiter")
 public class MobLimitListener extends EventModule implements Runnable {
@@ -36,23 +38,54 @@ public class MobLimitListener extends EventModule implements Runnable {
 
     @Override
     public void run() {
-        int animals = 0;
-        int mobs = 0;
-
-        for (World world : Bukkit.getWorlds()) {
-            for (Entity e : world.getEntities()) {
-                if (e instanceof Animals || e instanceof Villager) {
-                    animals++;
-                }
-
-                if (e instanceof Creature) {
-                    mobs++;
-                }
-            }
+        final List<World> worlds = Bukkit.getWorlds();
+        if (worlds.isEmpty()) {
+            canAnimalspawn = true;
+            canMobspawn = true;
+            return;
         }
 
-        canAnimalspawn = animals < this.animals;
-        canMobspawn = mobs < this.mobs;
+        final AtomicInteger totalAnimals = new AtomicInteger(0);
+        final AtomicInteger totalMobs = new AtomicInteger(0);
+        final AtomicInteger pendingWorlds = new AtomicInteger(worlds.size());
+
+        for (World world : worlds) {
+            final Entity[] snapshot = world.getEntities().toArray(new Entity[0]);
+            if (snapshot.length == 0) {
+                if (pendingWorlds.decrementAndGet() == 0) {
+                    canAnimalspawn = totalAnimals.get() < this.animals;
+                    canMobspawn = totalMobs.get() < this.mobs;
+                }
+
+                continue;
+            }
+
+            final AtomicInteger animalsInWorld = new AtomicInteger(0);
+            final AtomicInteger mobsInWorld = new AtomicInteger(0);
+            final AtomicInteger pending = new AtomicInteger(snapshot.length);
+
+            for (Entity e : snapshot) {
+                ClearLag.scheduler().runAtEntity(e, task -> {
+                    try {
+                        if (e instanceof Animals || e instanceof Villager) {
+                            animalsInWorld.incrementAndGet();
+                        }
+                        if (e instanceof Creature) {
+                            mobsInWorld.incrementAndGet();
+                        }
+                    } finally {
+                        if (pending.decrementAndGet() == 0) {
+                            totalAnimals.addAndGet(animalsInWorld.get());
+                            totalMobs.addAndGet(mobsInWorld.get());
+                            if (pendingWorlds.decrementAndGet() == 0) {
+                                canAnimalspawn = totalAnimals.get() < this.animals;
+                                canMobspawn = totalMobs.get() < this.mobs;
+                            }
+                        }
+                    }
+                });
+            }
+        }
     }
 
     @Override
@@ -60,15 +93,14 @@ public class MobLimitListener extends EventModule implements Runnable {
         super.setEnabled();
 
         cancelled.set(false);
-        long ticks = Math.max(1L, interval * 20L);
         ClearLag.scheduler().runTimer(task -> {
             if (cancelled.get()) {
                 task.cancel();
                 return;
             }
 
-            this.run();
-        }, ticks, ticks);
+            run();
+        }, interval * 20L, interval * 20L);
     }
 
     @Override

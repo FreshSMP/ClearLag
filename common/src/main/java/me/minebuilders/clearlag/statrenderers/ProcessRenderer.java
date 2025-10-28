@@ -9,9 +9,8 @@ import org.bukkit.map.MapPalette;
 import org.bukkit.map.MapView;
 import org.bukkit.map.MinecraftFont;
 
-import java.util.LinkedList;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Thread.State.*;
 
@@ -31,9 +30,7 @@ public class ProcessRenderer extends StatRenderer {
 
     private final Thread watchingThread;
 
-    private final LinkedList<StateColumn> threadStateColumns = new LinkedList<>();
-
-    private final Lock lock = new ReentrantLock();
+    private final ConcurrentLinkedDeque<StateColumn> threadStateColumns = new ConcurrentLinkedDeque<>();
 
     private final WrappedTask samplerTask;
 
@@ -74,8 +71,6 @@ public class ProcessRenderer extends StatRenderer {
         int sleepTime = 0;
         int totalTime = 0;
 
-        lock.lock();
-
         if (!threadStateColumns.isEmpty()) {
             totalTime = threadStateColumns.size() * TICK_LENGTH;
             for (StateColumn stateColumn : threadStateColumns) {
@@ -99,8 +94,6 @@ public class ProcessRenderer extends StatRenderer {
                 ++x;
             }
         }
-
-        lock.unlock();
 
         final int tickLineY = width - 51;
         for (int i = 0; i < width; ++i) {
@@ -147,37 +140,19 @@ public class ProcessRenderer extends StatRenderer {
 
     private class SamplerRunnable implements Runnable {
 
-        private StateColumn currentColumn = new StateColumn();
+        private volatile StateColumn currentColumn = new StateColumn();
+        private final AtomicInteger sampleCount = new AtomicInteger(0);
 
         @Override
         public void run() {
-            for (int i = 0; i < TICK_LENGTH; i++) {
-                if (currentColumn.length >= TICK_LENGTH) {
-                    lock.lock();
-                    try {
-                        threadStateColumns.addFirst(currentColumn);
-                        if (threadStateColumns.size() > width) {
-                            threadStateColumns.removeLast();
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                        lock.unlock();
-
-                        currentColumn = new StateColumn();
-                    }
+            currentColumn.addStateStat(stateGroupTable[watchingThread.getState().ordinal()]);
+            if (sampleCount.incrementAndGet() >= TICK_LENGTH) {
+                threadStateColumns.addFirst(currentColumn);
+                while (threadStateColumns.size() > width) {
+                    threadStateColumns.pollLast();
                 }
-
-                currentColumn.addStateStat(stateGroupTable[watchingThread.getState().ordinal()]);
-
-                if (i < (TICK_LENGTH - 1)) {
-                    try {
-                        Thread.sleep(1L);
-                    } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                        return;
-                    }
-                }
+                currentColumn = new StateColumn();
+                sampleCount.set(0);
             }
         }
     }
